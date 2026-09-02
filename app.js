@@ -4,7 +4,7 @@
  */
 
 // Global State
-const DEFAULT_PASSCODE = '1234';
+const DEFAULT_PASSCODE = '8478';
 const DEFAULT_CENTER_NAME = 'Apex Teaching Center';
 
 let appState = {
@@ -58,6 +58,9 @@ function loadDataFromStorage() {
     try {
       const parsed = JSON.parse(storedState);
       appState = { ...appState, ...parsed };
+      if (!appState.passcode || appState.passcode === '1234') {
+        appState.passcode = DEFAULT_PASSCODE;
+      }
     } catch (e) {
       console.error('Failed to parse saved state', e);
       loadSampleData();
@@ -161,7 +164,7 @@ function handlePasscodeVal(val) {
       } else {
         const authCard = document.getElementById('authCard');
         authCard.classList.add('shake');
-        authError.textContent = 'Incorrect Passcode. Default is 1234.';
+        authError.textContent = 'Incorrect Passcode. Default is 8478.';
         setTimeout(() => authCard.classList.remove('shake'), 400);
         currentEnteredPasscode = '';
         updatePasscodeDots();
