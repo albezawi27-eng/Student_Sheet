@@ -816,8 +816,13 @@ function setupEventListeners() {
     updateStatsSummary();
   });
 
-  // Export to CSV
+  // Export to CSV & Global Class PDF
   document.getElementById('btnExportCSV').addEventListener('click', exportToCSV);
+  
+  const btnClassPDF = document.getElementById('btnDownloadClassPDF');
+  if (btnClassPDF) {
+    btnClassPDF.addEventListener('click', downloadGlobalClassPDF);
+  }
 
   // Analytics Button
   document.getElementById('btnAnalytics').addEventListener('click', openAnalyticsModal);
@@ -1156,4 +1161,182 @@ function closeModal(id) {
 
 function escapeHtml(str) {
   return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ==========================================================================
+   GLOBAL CLASS LESSON PDF REPORT GENERATOR
+   ========================================================================== */
+function downloadGlobalClassPDF() {
+  const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
+  const currentClass = appState.classes.find(c => c.id === appState.currentClassId);
+  const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
+
+  if (currentStudents.length === 0) {
+    alert('No students found in this class to generate report.');
+    return;
+  }
+
+  // Calculate statistics for the hero header
+  let totalDictation = 0;
+  let totalSkillsChecked = 0;
+  let totalPossibleSkills = currentStudents.length * CRITERIA_KEYS.length;
+  let totalAttended = 0;
+
+  currentStudents.forEach(s => {
+    const evalKey = `${appState.currentLessonId}_${s.id}`;
+    const ev = appState.evaluations[evalKey];
+    if (ev) {
+      totalDictation += (ev.dictationMark || 0);
+      if (ev.criteria) {
+        if (ev.criteria.attendance) totalAttended++;
+        CRITERIA_KEYS.forEach(c => {
+          if (ev.criteria[c.id]) totalSkillsChecked++;
+        });
+      }
+    }
+  });
+
+  const avgDict = (totalDictation / currentStudents.length).toFixed(1);
+  const passRate = Math.round((totalSkillsChecked / totalPossibleSkills) * 100);
+  const attRate = Math.round((totalAttended / currentStudents.length) * 100);
+
+  // Build Table Rows
+  let tableRowsHTML = '';
+  currentStudents.forEach((student, idx) => {
+    const evalKey = `${appState.currentLessonId}_${student.id}`;
+    const ev = appState.evaluations[evalKey] || { dictationMark: 0, criteria: {}, notes: '' };
+    const gradeObj = calculateGrade(ev.dictationMark);
+
+    const cr = ev.criteria || {};
+
+    tableRowsHTML += `
+      <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 10px 8px; font-weight: 700; color: #64748b; font-size: 11px; text-align: center;">${idx + 1}</td>
+        <td style="padding: 10px 10px; font-weight: 800; color: #0f172a; font-size: 13px;">${escapeHtml(student.name)}</td>
+        <td style="padding: 10px 8px; font-weight: 900; color: #059669; font-size: 14px; text-align: center;">
+          ${ev.dictationMark || 0} <span style="font-size: 10px; color: #64748b;">/${appState.maxDictationScore}</span>
+        </td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.attendance ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.attendance ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.hw ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.hw ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.listening ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.listening ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.reading ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.reading ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.speaking ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.speaking ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.writing ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.writing ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.video ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.video ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 8px; text-align: center;">
+          <span style="font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 99px; background: ${gradeObj.cssClass === 'excellent' ? '#d1fae5; color: #047857;' : gradeObj.cssClass === 'good' ? '#dbeafe; color: #1e40af;' : '#fef3c7; color: #b45309;'}" >
+            ${gradeObj.label}
+          </span>
+        </td>
+        <td style="padding: 10px 10px; font-size: 11px; color: #475569; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          ${escapeHtml(ev.notes || '-')}
+        </td>
+      </tr>
+    `;
+  });
+
+  // Create temporary container for PDF generation
+  const container = document.createElement('div');
+  container.style.cssText = 'position: absolute; left: -9999px; top: -9999px; width: 1050px; background: #ffffff; color: #0f172a; font-family: "Outfit", sans-serif; padding: 24px; box-sizing: border-box;';
+
+  container.innerHTML = `
+    <div style="border: 2px solid #2563eb; border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+      <!-- Header Banner -->
+      <div style="background: linear-gradient(135deg, #059669 0%, #10b981 40%, #2563eb 100%); padding: 24px 28px; color: #ffffff;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; backdrop-filter: blur(4px);">
+              <i class="fa-solid fa-school"></i>
+            </div>
+            <div>
+              <h2 style="font-size: 22px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: -0.5px;">${escapeHtml(appState.centerName)}</h2>
+              <div style="font-size: 11px; opacity: 0.95; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px;">Global Class Lesson Evaluation Master Report</div>
+            </div>
+          </div>
+          <div style="background: #f59e0b; color: #78350f; font-size: 11px; font-weight: 800; padding: 6px 16px; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px;">
+            ${currentStudents.length} Enrolled Students
+          </div>
+        </div>
+      </div>
+
+      <!-- Class Info & Stats Summary Cards -->
+      <div style="padding: 20px 24px 10px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px;">
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 14px; border-radius: 12px;">
+            <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Class / Grade / Group</div>
+            <div style="font-size: 15px; font-weight: 800; color: #2563eb; margin-top: 3px;">${escapeHtml(currentClass ? currentClass.name : '')}</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 14px; border-radius: 12px;">
+            <div style="font-size: 10px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Lesson Topic & Date</div>
+            <div style="font-size: 13px; font-weight: 800; color: #0f172a; margin-top: 3px;">${escapeHtml(currentLesson ? currentLesson.title : '')}</div>
+            <div style="font-size: 11px; color: #64748b; font-weight: 600;">Date: ${currentLesson ? currentLesson.date : ''}</div>
+          </div>
+          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 12px 14px; border-radius: 12px;">
+            <div style="font-size: 10px; color: #047857; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Class Dictation Average</div>
+            <div style="font-size: 18px; font-weight: 900; color: #059669; margin-top: 2px;">${avgDict} <span style="font-size: 12px; color: #64748b;">/${appState.maxDictationScore}</span></div>
+          </div>
+          <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 12px 14px; border-radius: 12px;">
+            <div style="font-size: 10px; color: #1e40af; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Skill Pass & Attendance</div>
+            <div style="font-size: 15px; font-weight: 900; color: #2563eb; margin-top: 2px;">${passRate}% Pass Rate</div>
+            <div style="font-size: 11px; color: #475569; font-weight: 600;">${attRate}% Attendance</div>
+          </div>
+        </div>
+
+        <!-- Master Evaluation Table Header Title -->
+        <div style="margin-bottom: 12px; font-weight: 800; font-size: 14px; color: #0f172a; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+          <i class="fa-solid fa-table-list" style="color: #10b981; font-size: 16px;"></i>
+          Master Class Evaluation Spreadsheet (Green Checkmark ✔ = Completed)
+        </div>
+
+        <!-- Master Evaluation Table -->
+        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 20px; font-size: 12px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <thead>
+            <tr style="background: #1e293b; color: #ffffff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+              <th style="padding: 10px 8px; text-align: center;">#</th>
+              <th style="padding: 10px 10px;">Student Name</th>
+              <th style="padding: 10px 8px; text-align: center;">Dictation</th>
+              <th style="padding: 10px 6px; text-align: center;" title="Attendance">Att.</th>
+              <th style="padding: 10px 6px; text-align: center;" title="Homework">H.W.</th>
+              <th style="padding: 10px 6px; text-align: center;" title="Listening">List.</th>
+              <th style="padding: 10px 6px; text-align: center;" title="Reading">Read.</th>
+              <th style="padding: 10px 6px; text-align: center;" title="Speaking">Spek.</th>
+              <th style="padding: 10px 6px; text-align: center;" title="Writing">Writ.</th>
+              <th style="padding: 10px 6px; text-align: center;" title="Video">Vid.</th>
+              <th style="padding: 10px 8px; text-align: center;">Grade</th>
+              <th style="padding: 10px 10px;">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableRowsHTML}
+          </tbody>
+        </table>
+
+        <!-- Verification Footer -->
+        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 2px dashed #cbd5e1; padding-top: 14px; margin-top: 10px; font-size: 11px; color: #64748b;">
+          <div><i class="fa-solid fa-shield-halved" style="color: #2563eb;"></i> Certified Global Class Summary Record | Generated: ${new Date().toLocaleString()}</div>
+          <div style="font-weight: 700; color: #0f172a;">Teacher Signature: _______________________</div>
+        </div>
+
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(container);
+
+  const opt = {
+    margin:       [6, 6, 6, 6],
+    filename:     `Global_Class_Report_${(currentClass ? currentClass.name : 'class').replace(/\s+/g, '_')}_${(currentLesson ? currentLesson.title : 'lesson').replace(/\s+/g, '_')}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+  };
+
+  if (typeof html2pdf !== 'undefined') {
+    html2pdf().set(opt).from(container).save().then(() => {
+      document.body.removeChild(container);
+    });
+  } else {
+    window.print();
+    document.body.removeChild(container);
+  }
 }
