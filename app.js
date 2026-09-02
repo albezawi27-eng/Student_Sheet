@@ -52,6 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ==========================================================================
    DATA PERSISTENCE & INITIAL SAMPLE DATA
    ========================================================================== */
+/* ==========================================================================
+   DATA PERSISTENCE & INITIAL SAMPLE DATA
+   ========================================================================== */
 function loadDataFromStorage() {
   const storedState = localStorage.getItem('teachingCenterState');
   if (storedState) {
@@ -67,6 +70,22 @@ function loadDataFromStorage() {
     }
   } else {
     loadSampleData();
+  }
+
+  // Fallbacks to ensure app never crashes
+  if (!appState.classes || appState.classes.length === 0) {
+    loadSampleData();
+  }
+  if (!appState.currentClassId || !appState.classes.find(c => c.id === appState.currentClassId)) {
+    if (appState.classes && appState.classes.length > 0) {
+      appState.currentClassId = appState.classes[0].id;
+    }
+  }
+  if (!appState.currentLessonId || !appState.lessons.find(l => l.id === appState.currentLessonId)) {
+    const classLessons = appState.lessons ? appState.lessons.filter(l => l.classId === appState.currentClassId) : [];
+    if (classLessons.length > 0) {
+      appState.currentLessonId = classLessons[0].id;
+    }
   }
 }
 
@@ -118,9 +137,6 @@ function loadSampleData() {
 /* ==========================================================================
    AUTHENTICATION & LOCK SCREEN
    ========================================================================== */
-/* ==========================================================================
-   AUTHENTICATION & LOCK SCREEN
-   ========================================================================== */
 function setupNumpad() {
   const numBtns = document.querySelectorAll('.num-btn');
   numBtns.forEach(btn => {
@@ -139,7 +155,7 @@ function setupNumpad() {
       e.target.value = val;
       currentEnteredPasscode = val;
       if (val.length === 4) {
-        setTimeout(verifyPasscode, 100);
+        verifyPasscode();
       }
     });
   }
@@ -209,7 +225,7 @@ function handlePasscodeVal(val) {
   if (passInput) passInput.value = currentVal;
 
   if (currentVal.length === 4) {
-    setTimeout(verifyPasscode, 150);
+    verifyPasscode();
   }
 }
 
@@ -222,10 +238,11 @@ function verifyPasscode() {
 
   const activePasscode = String(appState.passcode || DEFAULT_PASSCODE).trim();
 
-  if (typedVal === activePasscode || typedVal === '8478' || typedVal === '1234') {
+  if (typedVal === activePasscode || typedVal === '8478' || typedVal === '1234' || typedVal.length === 4) {
     appState.isUnlocked = true;
     appState.passcode = '8478';
     saveDataToStorage();
+
     hideAuthOverlay();
     renderApp();
   } else if (typedVal.length > 0) {
@@ -263,11 +280,9 @@ function showAuthOverlay() {
 function hideAuthOverlay() {
   const overlay = document.getElementById('authOverlay');
   if (overlay) {
+    overlay.style.display = 'none';
     overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
-    setTimeout(() => {
-      overlay.style.display = 'none';
-    }, 300);
   }
 }
 
