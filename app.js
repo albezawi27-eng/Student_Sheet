@@ -475,68 +475,130 @@ function openReportModal(studentId) {
     }
   }
 
-  // Build Skills Checklist with Green Right Mark (✔)
-  let skillsHTML = `<div class="report-skills-grid">`;
+  // Build Skills Checklist Cards with Green Right Mark (✔)
+  let skillsHTML = '';
   CRITERIA_KEYS.forEach(c => {
     const isPassed = evalData.criteria && evalData.criteria[c.id];
     skillsHTML += `
-      <div class="report-skill-item">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid ${c.icon}" style="color: var(--primary);"></i>
-          <span class="report-skill-name">${c.label}</span>
+      <div style="display: flex; align-items: center; justify-content: space-between; background: ${isPassed ? '#f0fdf4' : '#f8fafc'}; border: 1px solid ${isPassed ? '#86efac' : '#e2e8f0'}; padding: 12px 16px; border-radius: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fa-solid ${c.icon}" style="color: ${isPassed ? '#10b981' : '#94a3b8'}; font-size: 15px;"></i>
+          <span style="font-weight: 700; font-size: 14px; color: ${isPassed ? '#0f172a' : '#64748b'};">${c.label}</span>
         </div>
-        <div class="report-skill-status ${isPassed ? 'passed' : 'missed'}">
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: ${isPassed ? '#059669' : '#94a3b8'};">
           <span>${isPassed ? 'Achieved' : 'Pending'}</span>
-          <span class="status-icon">${isPassed ? '✔' : '✖'}</span>
+          <span style="width: 22px; height: 22px; background: ${isPassed ? '#10b981' : '#cbd5e1'}; color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; box-shadow: ${isPassed ? '0 2px 6px rgba(16,185,129,0.3)' : 'none'};">
+            ${isPassed ? '✔' : '✖'}
+          </span>
         </div>
       </div>
     `;
   });
-  skillsHTML += `</div>`;
+
+  reportContainer.dataset.studentName = student.name;
+  reportContainer.dataset.lessonTitle = currentLesson.title;
 
   reportContainer.innerHTML = `
-    <div class="report-header">
-      <div class="report-center-title">${escapeHtml(appState.centerName)}</div>
-      <div style="font-size: 14px; color: var(--text-muted); margin-top: 4px;">
-        Official Lesson Performance & Skill Evaluation Report
-      </div>
-    </div>
-
-    <div class="report-meta-grid">
-      <div class="report-meta-item"><span>Student Name:</span> <strong>${escapeHtml(student.name)}</strong></div>
-      <div class="report-meta-item"><span>Class Group:</span> <strong>${escapeHtml(currentClass ? currentClass.name : '')}</strong></div>
-      <div class="report-meta-item"><span>Lesson Topic:</span> <strong>${escapeHtml(currentLesson.title)}</strong></div>
-      <div class="report-meta-item"><span>Date:</span> <strong>${currentLesson.date}</strong></div>
-    </div>
-
-    <div class="report-score-box">
-      <div>
-        <div style="font-size: 13px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Dictation Mark</div>
-        <div class="report-score-val">${evalData.dictationMark} <span style="font-size: 18px; color: var(--text-muted);">/ ${appState.maxDictationScore}</span></div>
-      </div>
-      <div style="text-align: right;">
-        <div class="badge-grade ${gradeObj.cssClass}" style="font-size: 14px; padding: 6px 16px;">
-          ${gradeObj.label}
+    <div class="report-pdf-wrapper" style="background: #ffffff; color: #0f172a; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 2px solid #e2e8f0; font-family: 'Outfit', sans-serif; padding-bottom: 24px;">
+      
+      <!-- Top Banner Header -->
+      <div style="background: linear-gradient(135deg, #059669 0%, #10b981 50%, #2563eb 100%); padding: 26px 30px; color: #ffffff; position: relative;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; backdrop-filter: blur(4px);">
+              <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+              <h2 style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; margin: 0; line-height: 1.1;">${escapeHtml(appState.centerName)}</h2>
+              <div style="font-size: 11px; opacity: 0.9; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px;">Official Student Evaluation Report</div>
+            </div>
+          </div>
+          <div style="background: #f59e0b; color: #78350f; font-size: 11px; font-weight: 800; padding: 6px 14px; border-radius: 99px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+            ★ Certified Report Card
+          </div>
         </div>
-        <div style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">Skills Completed: ${completionPct}%</div>
       </div>
-    </div>
 
-    <div class="report-skills-title">
-      <i class="fa-solid fa-list-check" style="color: var(--primary);"></i>
-      <span>7 Core Lesson Criteria (Green Checkmark ✔ = Mastered)</span>
-    </div>
+      <!-- Student & Lesson Info Grid -->
+      <div style="padding: 24px 30px 12px;">
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px;">
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 12px;">
+            <div style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Student Name</div>
+            <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 2px;">${escapeHtml(student.name)}</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 12px;">
+            <div style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Class & Group</div>
+            <div style="font-size: 16px; font-weight: 700; color: #2563eb; margin-top: 2px;">${escapeHtml(currentClass ? currentClass.name : '')}</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 12px;">
+            <div style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Lesson Topic</div>
+            <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 2px;">${escapeHtml(currentLesson.title)}</div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 14px 18px; border-radius: 12px;">
+            <div style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Lesson Date</div>
+            <div style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 2px;">${currentLesson.date}</div>
+          </div>
+        </div>
 
-    ${skillsHTML}
+        <!-- Dictation Mark & Performance Badge Banner -->
+        <div style="display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #ecfdf5 0%, #eff6ff 100%); border: 2px solid #10b981; padding: 20px 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 4px 14px rgba(16,185,129,0.12);">
+          <div>
+            <div style="font-size: 12px; color: #047857; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Dictation Mark</div>
+            <div style="font-size: 36px; font-weight: 900; color: #059669; line-height: 1.1; margin-top: 2px;">
+              ${evalData.dictationMark} <span style="font-size: 20px; color: #64748b; font-weight: 700;">/ ${appState.maxDictationScore}</span>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="background: #10b981; color: #ffffff; font-size: 14px; font-weight: 800; padding: 8px 18px; border-radius: 99px; display: inline-block; box-shadow: 0 4px 10px rgba(16,185,129,0.25);">
+              ${gradeObj.label}
+            </div>
+            <div style="font-size: 12px; color: #475569; font-weight: 700; margin-top: 8px;">
+              Skill Mastery: <strong style="color: #059669;">${completionPct}%</strong>
+            </div>
+          </div>
+        </div>
 
-    <div class="report-teacher-notes">
-      <h4><i class="fa-solid fa-comment-dots"></i> Teacher & Assistant Feedback:</h4>
-      <p>${escapeHtml(teacherComment)}</p>
-    </div>
+        <!-- 7 Core Criteria Green Right Checkmark (✔) Grid -->
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+            <i class="fa-solid fa-square-check" style="color: #10b981; font-size: 17px;"></i>
+            7 Core Lesson Criteria (Green Checkmark ✔ = Achieved)
+          </h4>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+            ${skillsHTML}
+          </div>
+        </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 16px; font-size: 12px; color: var(--text-muted);">
-      <div>Teaching Center Stamp / Signature: ___________________</div>
-      <div>Issued on: ${new Date().toLocaleDateString()}</div>
+        <!-- Teacher Notes Section -->
+        <div style="background: #f8fafc; border-left: 5px solid #10b981; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; padding: 18px 20px; border-radius: 0 12px 12px 0; margin-bottom: 24px;">
+          <div style="font-size: 12px; font-weight: 800; color: #059669; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-comment-dots"></i> Teacher & Assistant Feedback
+          </div>
+          <div style="font-size: 14px; color: #334155; line-height: 1.6; font-weight: 500;">
+            "${escapeHtml(teacherComment)}"
+          </div>
+        </div>
+
+        <!-- Stamp & Signature Footer -->
+        <div style="display: flex; align-items: center; justify-content: space-between; border-top: 2px dashed #cbd5e1; padding-top: 18px; margin-top: 20px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; background: #ecfdf5; border: 2px solid #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 15px;">
+              <i class="fa-solid fa-award"></i>
+            </div>
+            <div>
+              <div style="font-size: 11px; font-weight: 800; color: #0f172a; text-transform: uppercase;">Verified Center Seal</div>
+              <div style="font-size: 10px; color: #64748b;">Issued on ${new Date().toLocaleDateString()}</div>
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 11px; font-weight: 700; color: #475569;">Teacher / Assistant Signature:</div>
+            <div style="font-size: 14px; color: #0f172a; margin-top: 4px; border-bottom: 1px solid #94a3b8; padding-bottom: 2px; display: inline-block; min-width: 140px; text-align: center; font-weight: 600;">
+              Approved Evaluation
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   `;
 
@@ -545,6 +607,26 @@ function openReportModal(studentId) {
   document.getElementById('btnCopyReportText').dataset.shareText = shareText;
 
   openModal('reportModal');
+}
+
+function downloadPDFReport() {
+  const element = document.getElementById('reportCardContent');
+  const studentName = element.dataset.studentName || 'Student';
+  const lessonTitle = element.dataset.lessonTitle || 'Lesson';
+
+  const opt = {
+    margin:       [8, 8, 8, 8],
+    filename:     `Report_${studentName.replace(/\s+/g, '_')}_${lessonTitle.replace(/\s+/g, '_')}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  if (typeof html2pdf !== 'undefined') {
+    html2pdf().set(opt).from(element).save();
+  } else {
+    window.print();
+  }
 }
 
 /* ==========================================================================
@@ -599,10 +681,15 @@ function setupEventListeners() {
     document.documentElement.setAttribute('data-theme', appState.theme);
   });
 
-  // Print Report Card
+  // Print & PDF Export Report Card
   document.getElementById('btnPrintReport').addEventListener('click', () => {
     window.print();
   });
+
+  const btnPDF = document.getElementById('btnDownloadPDF');
+  if (btnPDF) {
+    btnPDF.addEventListener('click', downloadPDFReport);
+  }
 
   // Copy Text Summary for WhatsApp
   document.getElementById('btnCopyReportText').addEventListener('click', (e) => {
