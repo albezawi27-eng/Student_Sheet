@@ -821,7 +821,22 @@ function setupEventListeners() {
   
   const btnClassPDF = document.getElementById('btnDownloadClassPDF');
   if (btnClassPDF) {
-    btnClassPDF.addEventListener('click', downloadGlobalClassPDF);
+    btnClassPDF.addEventListener('click', openGlobalReportModal);
+  }
+
+  const btnCloseGlobal = document.getElementById('btnCloseGlobalReportModal');
+  if (btnCloseGlobal) {
+    btnCloseGlobal.addEventListener('click', () => closeModal('globalReportModal'));
+  }
+
+  const btnPrintGlobal = document.getElementById('btnPrintGlobalReport');
+  if (btnPrintGlobal) {
+    btnPrintGlobal.addEventListener('click', () => window.print());
+  }
+
+  const btnDownloadGlobal = document.getElementById('btnDownloadGlobalPDF');
+  if (btnDownloadGlobal) {
+    btnDownloadGlobal.addEventListener('click', downloadGlobalClassPDF);
   }
 
   // Analytics Button
@@ -1160,13 +1175,10 @@ function closeModal(id) {
 }
 
 function escapeHtml(str) {
-  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-/* ==========================================================================
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/* ==========================================================================
    GLOBAL CLASS LESSON PDF REPORT GENERATOR
    ========================================================================== */
-function downloadGlobalClassPDF() {
+function openGlobalReportModal() {
   const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
   const currentClass = appState.classes.find(c => c.id === appState.currentClassId);
   const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
@@ -1210,19 +1222,19 @@ function downloadGlobalClassPDF() {
     const cr = ev.criteria || {};
 
     tableRowsHTML += `
-      <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
+      <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #cbd5e1;">
         <td style="padding: 10px 8px; font-weight: 700; color: #64748b; font-size: 11px; text-align: center;">${idx + 1}</td>
         <td style="padding: 10px 10px; font-weight: 800; color: #0f172a; font-size: 13px;">${escapeHtml(student.name)}</td>
         <td style="padding: 10px 8px; font-weight: 900; color: #059669; font-size: 14px; text-align: center;">
           ${ev.dictationMark || 0} <span style="font-size: 10px; color: #64748b;">/${appState.maxDictationScore}</span>
         </td>
-        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.attendance ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.attendance ? '✔' : '✖'}</span></td>
-        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.hw ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.hw ? '✔' : '✖'}</span></td>
-        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.listening ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.listening ? '✔' : '✖'}</span></td>
-        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.reading ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.reading ? '✔' : '✖'}</span></td>
-        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.speaking ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.speaking ? '✔' : '✖'}</span></td>
-        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.writing ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.writing ? '✔' : '✖'}</span></td>
-        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.video ? '#10b981' : '#cbd5e1'}; font-size: 13px; font-weight: 900;">${cr.video ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.attendance ? '#10b981' : '#94a3b8'}; font-size: 13px; font-weight: 900;">${cr.attendance ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.hw ? '#10b981' : '#94a3b8'}; font-size: 13px; font-weight: 900;">${cr.hw ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.listening ? '#10b981' : '#94a3b8'}; font-size: 13px; font-weight: 900;">${cr.listening ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.reading ? '#10b981' : '#94a3b8'}; font-size: 13px; font-weight: 900;">${cr.reading ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.speaking ? '#10b981' : '#94a3b8'}; font-size: 13px; font-weight: 900;">${cr.speaking ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.writing ? '#10b981' : '#94a3b8'}; font-size: 13px; font-weight: 900;">${cr.writing ? '✔' : '✖'}</span></td>
+        <td style="padding: 10px 6px; text-align: center;"><span style="color: ${cr.video ? '#10b981' : '#94a3b8'}; font-size: 13px; font-weight: 900;">${cr.video ? '✔' : '✖'}</span></td>
         <td style="padding: 10px 8px; text-align: center;">
           <span style="font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 99px; background: ${gradeObj.cssClass === 'excellent' ? '#d1fae5; color: #047857;' : gradeObj.cssClass === 'good' ? '#dbeafe; color: #1e40af;' : '#fef3c7; color: #b45309;'}" >
             ${gradeObj.label}
@@ -1235,12 +1247,12 @@ function downloadGlobalClassPDF() {
     `;
   });
 
-  // Create temporary container for PDF generation
-  const container = document.createElement('div');
-  container.style.cssText = 'position: absolute; left: -9999px; top: -9999px; width: 1050px; background: #ffffff; color: #0f172a; font-family: "Outfit", sans-serif; padding: 24px; box-sizing: border-box;';
+  const reportContainer = document.getElementById('globalReportCardContent');
+  reportContainer.dataset.className = currentClass ? currentClass.name : 'Class';
+  reportContainer.dataset.lessonTitle = currentLesson ? currentLesson.title : 'Lesson';
 
-  container.innerHTML = `
-    <div style="border: 2px solid #2563eb; border-radius: 16px; overflow: hidden; background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+  reportContainer.innerHTML = `
+    <div class="global-report-pdf-wrapper" style="background: #ffffff; color: #0f172a; border-radius: 16px; overflow: hidden; border: 2px solid #e2e8f0; font-family: 'Outfit', sans-serif; padding-bottom: 20px;">
       <!-- Header Banner -->
       <div style="background: linear-gradient(135deg, #059669 0%, #10b981 40%, #2563eb 100%); padding: 24px 28px; color: #ffffff;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -1289,7 +1301,7 @@ function downloadGlobalClassPDF() {
         </div>
 
         <!-- Master Evaluation Table -->
-        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 20px; font-size: 12px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 20px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden;">
           <thead>
             <tr style="background: #1e293b; color: #ffffff; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
               <th style="padding: 10px 8px; text-align: center;">#</th>
@@ -1321,22 +1333,26 @@ function downloadGlobalClassPDF() {
     </div>
   `;
 
-  document.body.appendChild(container);
+  openModal('globalReportModal');
+}
+
+function downloadGlobalClassPDF() {
+  const element = document.getElementById('globalReportCardContent');
+  const className = element.dataset.className || 'Class';
+  const lessonTitle = element.dataset.lessonTitle || 'Lesson';
 
   const opt = {
     margin:       [6, 6, 6, 6],
-    filename:     `Global_Class_Report_${(currentClass ? currentClass.name : 'class').replace(/\s+/g, '_')}_${(currentLesson ? currentLesson.title : 'lesson').replace(/\s+/g, '_')}.pdf`,
+    filename:     `Global_Class_Report_${className.replace(/\s+/g, '_')}_${lessonTitle.replace(/\s+/g, '_')}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2, useCORS: true, logging: false },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
   };
 
   if (typeof html2pdf !== 'undefined') {
-    html2pdf().set(opt).from(container).save().then(() => {
-      document.body.removeChild(container);
-    });
+    html2pdf().set(opt).from(element).save();
   } else {
     window.print();
-    document.body.removeChild(container);
   }
+}
 }

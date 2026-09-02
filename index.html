@@ -267,6 +267,33 @@
   </div>
 
   <!-- ==========================================================================
+       MODAL: GLOBAL CLASS LESSON REPORT (Printable / PDF)
+       ========================================================================== -->
+  <div class="modal-overlay" id="globalReportModal">
+    <div class="modal-container" style="max-width: 950px;">
+      <div class="modal-header no-print">
+        <h3 class="modal-title"><i class="fa-solid fa-school"></i> Global Class Lesson Master Report</h3>
+        <button class="btn-icon" id="btnCloseGlobalReportModal"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px;">
+        <div id="globalReportCardContent">
+          <!-- Dynamically populated class master report -->
+        </div>
+      </div>
+
+      <div class="modal-footer no-print">
+        <button class="btn btn-secondary" id="btnPrintGlobalReport">
+          <i class="fa-solid fa-print"></i> Print Class Report
+        </button>
+        <button class="btn btn-primary" id="btnDownloadGlobalPDF" style="background: linear-gradient(135deg, #10b981, #2563eb); border: none; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);">
+          <i class="fa-solid fa-file-pdf"></i> Download PDF Class Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
        MODAL: ADD NEW STUDENT
        ========================================================================== -->
   <div class="modal-overlay" id="addStudentModal">
