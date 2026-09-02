@@ -118,31 +118,61 @@ function loadSampleData() {
 /* ==========================================================================
    AUTHENTICATION & LOCK SCREEN
    ========================================================================== */
+/* ==========================================================================
+   AUTHENTICATION & LOCK SCREEN
+   ========================================================================== */
 function setupNumpad() {
   const numBtns = document.querySelectorAll('.num-btn');
   numBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const val = btn.getAttribute('data-val');
       handlePasscodeVal(val);
     });
   });
 
+  const passInput = document.getElementById('passcodeInputField');
+  if (passInput) {
+    passInput.addEventListener('input', (e) => {
+      const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+      e.target.value = val;
+      currentEnteredPasscode = val;
+      updatePasscodeDots();
+      if (val.length === 4) {
+        verifyPasscode();
+      }
+    });
+  }
+
+  const authForm = document.getElementById('authForm');
+  if (authForm) {
+    authForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      verifyPasscode();
+    });
+  }
+
   document.addEventListener('keydown', (e) => {
     if (!appState.isUnlocked) {
+      if (e.target && e.target.id === 'passcodeInputField') return; // Handled by input event
       if (e.key >= '0' && e.key <= '9') {
         handlePasscodeVal(e.key);
       } else if (e.key === 'Backspace') {
         handlePasscodeVal('backspace');
       } else if (e.key === 'Escape') {
         handlePasscodeVal('clear');
+      } else if (e.key === 'Enter') {
+        verifyPasscode();
       }
     }
   });
 }
 
 function handlePasscodeVal(val) {
+  const passInput = document.getElementById('passcodeInputField');
   const authError = document.getElementById('authError');
-  authError.textContent = '';
+  if (authError) authError.textContent = '';
 
   if (val === 'clear') {
     currentEnteredPasscode = '';
@@ -152,24 +182,32 @@ function handlePasscodeVal(val) {
     currentEnteredPasscode += val;
   }
 
+  if (passInput) passInput.value = currentEnteredPasscode;
   updatePasscodeDots();
 
   if (currentEnteredPasscode.length === 4) {
-    setTimeout(() => {
-      if (currentEnteredPasscode === appState.passcode) {
-        appState.isUnlocked = true;
-        saveDataToStorage();
-        hideAuthOverlay();
-        renderApp();
-      } else {
-        const authCard = document.getElementById('authCard');
-        authCard.classList.add('shake');
-        authError.textContent = 'Incorrect Passcode. Access Denied.';
-        setTimeout(() => authCard.classList.remove('shake'), 400);
-        currentEnteredPasscode = '';
-        updatePasscodeDots();
-      }
-    }, 150);
+    setTimeout(verifyPasscode, 150);
+  }
+}
+
+function verifyPasscode() {
+  const authError = document.getElementById('authError');
+  if (currentEnteredPasscode === appState.passcode) {
+    appState.isUnlocked = true;
+    saveDataToStorage();
+    hideAuthOverlay();
+    renderApp();
+  } else if (currentEnteredPasscode.length > 0) {
+    const authCard = document.getElementById('authCard');
+    if (authCard) {
+      authCard.classList.add('shake');
+      setTimeout(() => authCard.classList.remove('shake'), 400);
+    }
+    if (authError) authError.textContent = 'Incorrect Passcode. Access Denied.';
+    currentEnteredPasscode = '';
+    const passInput = document.getElementById('passcodeInputField');
+    if (passInput) passInput.value = '';
+    updatePasscodeDots();
   }
 }
 
@@ -186,15 +224,28 @@ function updatePasscodeDots() {
 
 function showAuthOverlay() {
   currentEnteredPasscode = '';
+  const passInput = document.getElementById('passcodeInputField');
+  if (passInput) {
+    passInput.value = '';
+    setTimeout(() => passInput.focus(), 100);
+  }
   updatePasscodeDots();
-  document.getElementById('authOverlay').style.display = 'flex';
-  document.getElementById('authOverlay').style.opacity = '1';
+
+  const overlay = document.getElementById('authOverlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'auto';
+  }
 }
 
 function hideAuthOverlay() {
   const overlay = document.getElementById('authOverlay');
-  overlay.style.opacity = '0';
-  setTimeout(() => overlay.style.display = 'none', 300);
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+    setTimeout(() => overlay.style.display = 'none', 300);
+  }
 }
 
 /* ==========================================================================
