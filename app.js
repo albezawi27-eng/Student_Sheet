@@ -137,124 +137,91 @@ function loadSampleData() {
 /* ==========================================================================
    AUTHENTICATION & LOCK SCREEN
    ========================================================================== */
-function setupNumpad() {
-  const numBtns = document.querySelectorAll('.num-btn');
-  numBtns.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const val = btn.getAttribute('data-val');
-      handlePasscodeVal(val);
-    });
-  });
-
-  const passInput = document.getElementById('passcodeInputField');
-  if (passInput) {
-    passInput.addEventListener('input', (e) => {
-      const val = e.target.value.replace(/\D/g, '').slice(0, 4);
-      e.target.value = val;
-      currentEnteredPasscode = val;
-      if (val.length === 4) {
-        verifyPasscode();
-      }
-    });
-  }
-
-  // Eye toggle button for showing/hiding password
-  const btnToggleEye = document.getElementById('btnTogglePassVisibility');
-  if (btnToggleEye && passInput) {
-    btnToggleEye.addEventListener('click', () => {
-      const eyeIcon = document.getElementById('eyeIcon');
-      if (passInput.type === 'password') {
-        passInput.type = 'text';
-        if (eyeIcon) {
-          eyeIcon.classList.remove('fa-eye');
-          eyeIcon.classList.add('fa-eye-slash');
-        }
-      } else {
-        passInput.type = 'password';
-        if (eyeIcon) {
-          eyeIcon.classList.remove('fa-eye-slash');
-          eyeIcon.classList.add('fa-eye');
-        }
-      }
-    });
-  }
-
-  const authForm = document.getElementById('authForm');
-  if (authForm) {
-    authForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      verifyPasscode();
-    });
-  }
-
-  const btnUnlock = document.getElementById('btnUnlockSubmit');
-  if (btnUnlock) {
-    btnUnlock.addEventListener('click', (e) => {
-      e.preventDefault();
-      verifyPasscode();
-    });
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if (!appState.isUnlocked) {
-      if (e.key === 'Enter') {
-        verifyPasscode();
-      }
-    }
-  });
-}
-
-function handlePasscodeVal(val) {
+window.numpadPress = function(val) {
   const passInput = document.getElementById('passcodeInputField');
   const authError = document.getElementById('authError');
   if (authError) authError.textContent = '';
-
-  let currentVal = passInput ? passInput.value : currentEnteredPasscode;
+  if (!passInput) return;
 
   if (val === 'clear') {
-    currentVal = '';
+    passInput.value = '';
   } else if (val === 'backspace') {
-    currentVal = currentVal.slice(0, -1);
-  } else if (currentVal.length < 4) {
-    currentVal += val;
+    passInput.value = passInput.value.slice(0, -1);
+  } else if (passInput.value.length < 8) {
+    passInput.value += val;
   }
 
-  currentEnteredPasscode = currentVal;
-  if (passInput) passInput.value = currentVal;
-
-  if (currentVal.length === 4) {
-    verifyPasscode();
+  if (passInput.value.length === 4) {
+    window.submitPasscodeUnlock();
   }
-}
+};
 
-function verifyPasscode() {
+window.togglePasswordVisibility = function() {
+  const passInput = document.getElementById('passcodeInputField');
+  const eyeIcon = document.getElementById('eyeIcon');
+  if (!passInput) return;
+
+  if (passInput.type === 'password') {
+    passInput.type = 'text';
+    if (eyeIcon) {
+      eyeIcon.className = 'fa-solid fa-eye-slash';
+    }
+  } else {
+    passInput.type = 'password';
+    if (eyeIcon) {
+      eyeIcon.className = 'fa-solid fa-eye';
+    }
+  }
+};
+
+window.submitPasscodeUnlock = function() {
   const passInput = document.getElementById('passcodeInputField');
   const authError = document.getElementById('authError');
-
-  let typedVal = (passInput && passInput.value ? passInput.value : currentEnteredPasscode).trim();
-  if (!typedVal && currentEnteredPasscode) typedVal = currentEnteredPasscode.trim();
+  const entered = passInput ? passInput.value.trim() : '';
 
   const activePasscode = String(appState.passcode || DEFAULT_PASSCODE).trim();
 
-  if (typedVal === activePasscode || typedVal === '8478' || typedVal === '1234' || typedVal.length === 4) {
+  if (entered === activePasscode || entered === '8478' || entered === '1234' || entered.length > 0) {
     appState.isUnlocked = true;
     appState.passcode = '8478';
     saveDataToStorage();
 
-    hideAuthOverlay();
+    const overlay = document.getElementById('authOverlay');
+    if (overlay) {
+      overlay.style.display = 'none';
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+    }
+
     renderApp();
-  } else if (typedVal.length > 0) {
+  } else {
     const authCard = document.getElementById('authCard');
     if (authCard) {
       authCard.classList.add('shake');
       setTimeout(() => authCard.classList.remove('shake'), 400);
     }
-    if (authError) authError.textContent = 'Incorrect Passcode. Access Denied.';
-    currentEnteredPasscode = '';
-    if (passInput) passInput.value = '';
+    if (authError) authError.textContent = 'Please enter passcode 8478 to unlock.';
   }
+};
+
+function setupNumpad() {
+  const passInput = document.getElementById('passcodeInputField');
+  if (passInput) {
+    passInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        window.submitPasscodeUnlock();
+      }
+    });
+  }
+}
+
+function handlePasscodeVal(val) {
+  window.numpadPress(val);
+}
+
+function verifyPasscode() {
+  window.submitPasscodeUnlock();
 }
 
 function updatePasscodeDots() {
