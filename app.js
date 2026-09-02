@@ -138,9 +138,29 @@ function setupNumpad() {
       const val = e.target.value.replace(/\D/g, '').slice(0, 4);
       e.target.value = val;
       currentEnteredPasscode = val;
-      updatePasscodeDots();
       if (val.length === 4) {
-        verifyPasscode();
+        setTimeout(verifyPasscode, 100);
+      }
+    });
+  }
+
+  // Eye toggle button for showing/hiding password
+  const btnToggleEye = document.getElementById('btnTogglePassVisibility');
+  if (btnToggleEye && passInput) {
+    btnToggleEye.addEventListener('click', () => {
+      const eyeIcon = document.getElementById('eyeIcon');
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        if (eyeIcon) {
+          eyeIcon.classList.remove('fa-eye');
+          eyeIcon.classList.add('fa-eye-slash');
+        }
+      } else {
+        passInput.type = 'password';
+        if (eyeIcon) {
+          eyeIcon.classList.remove('fa-eye-slash');
+          eyeIcon.classList.add('fa-eye');
+        }
       }
     });
   }
@@ -163,17 +183,7 @@ function setupNumpad() {
 
   document.addEventListener('keydown', (e) => {
     if (!appState.isUnlocked) {
-      if (e.key >= '0' && e.key <= '9') {
-        if (document.activeElement !== passInput) {
-          handlePasscodeVal(e.key);
-        }
-      } else if (e.key === 'Backspace') {
-        if (document.activeElement !== passInput) {
-          handlePasscodeVal('backspace');
-        }
-      } else if (e.key === 'Escape') {
-        handlePasscodeVal('clear');
-      } else if (e.key === 'Enter') {
+      if (e.key === 'Enter') {
         verifyPasscode();
       }
     }
@@ -185,18 +195,20 @@ function handlePasscodeVal(val) {
   const authError = document.getElementById('authError');
   if (authError) authError.textContent = '';
 
+  let currentVal = passInput ? passInput.value : currentEnteredPasscode;
+
   if (val === 'clear') {
-    currentEnteredPasscode = '';
+    currentVal = '';
   } else if (val === 'backspace') {
-    currentEnteredPasscode = currentEnteredPasscode.slice(0, -1);
-  } else if (currentEnteredPasscode.length < 4) {
-    currentEnteredPasscode += val;
+    currentVal = currentVal.slice(0, -1);
+  } else if (currentVal.length < 4) {
+    currentVal += val;
   }
 
-  if (passInput) passInput.value = currentEnteredPasscode;
-  updatePasscodeDots();
+  currentEnteredPasscode = currentVal;
+  if (passInput) passInput.value = currentVal;
 
-  if (currentEnteredPasscode.length === 4) {
+  if (currentVal.length === 4) {
     setTimeout(verifyPasscode, 150);
   }
 }
@@ -225,19 +237,11 @@ function verifyPasscode() {
     if (authError) authError.textContent = 'Incorrect Passcode. Access Denied.';
     currentEnteredPasscode = '';
     if (passInput) passInput.value = '';
-    updatePasscodeDots();
   }
 }
 
 function updatePasscodeDots() {
-  const dots = document.querySelectorAll('#passcodeDots .dot');
-  dots.forEach((dot, idx) => {
-    if (idx < currentEnteredPasscode.length) {
-      dot.classList.add('active');
-    } else {
-      dot.classList.remove('active');
-    }
-  });
+  // Maintained for compatibility
 }
 
 function showAuthOverlay() {
@@ -247,7 +251,6 @@ function showAuthOverlay() {
     passInput.value = '';
     setTimeout(() => passInput.focus(), 100);
   }
-  updatePasscodeDots();
 
   const overlay = document.getElementById('authOverlay');
   if (overlay) {
