@@ -164,7 +164,7 @@ function handlePasscodeVal(val) {
       } else {
         const authCard = document.getElementById('authCard');
         authCard.classList.add('shake');
-        authError.textContent = 'Incorrect Passcode. Default is 8478.';
+        authError.textContent = 'Incorrect Passcode. Access Denied.';
         setTimeout(() => authCard.classList.remove('shake'), 400);
         currentEnteredPasscode = '';
         updatePasscodeDots();
