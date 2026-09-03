@@ -11,11 +11,6 @@ const DEFAULT_CENTER_NAME = 'My Community Center'; // <-- Put your clean text na
 // ==========================================
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-let appState = {
-  isUnlocked: false,
-  passcode: DEFAULT_PASSCODE,
-  centerName: DEFAULT_CENTER_NAME,
-};
 
 // ==========================================
 // 3. LOGIN FUNCTION
