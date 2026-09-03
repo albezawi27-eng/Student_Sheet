@@ -59,9 +59,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const success = await loginStaff(email, password);
 
-    if (success) {
-      document.getElementById('authOverlay').style.display = 'none';
-    } else {
+    //  TO THIS:
+if (success) {
+  hideAuthOverlay(); // This removes the display, opacity, AND the click-blocking shield!
+}
+ else {
       errorElement.textContent = 'Invalid email or password.';
       loginButton.disabled = false;
       loginButton.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Log In';
