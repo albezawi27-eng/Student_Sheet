@@ -42,7 +42,6 @@ async function loginUser() {
  */
 
 // Global State
-const DEFAULT_CENTER_NAME = 'Apex Teaching Center';
 
 let appState = {
   isUnlocked: false,
