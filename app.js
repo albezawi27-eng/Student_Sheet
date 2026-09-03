@@ -21,27 +21,6 @@ let appState = {
 };
 
 
-/**
- * Teaching Center - Student Evaluation & Lesson Report Web App
- * JavaScript Engine
- */
-
-// Global State
-
-let appState = {
-  isUnlocked: false,
-  passcode: DEFAULT_PASSCODE,
-  centerName: DEFAULT_CENTER_NAME,
-  maxDictationScore: 10,
-  currentClassId: null,
-  currentLessonId: null,
-  theme: 'dark',
-  classes: [],
-  lessons: [],
-  students: [],
-  evaluations: {} // key: `${lessonId}_${studentId}`
-};
-
 // Available Evaluation Criteria List
 const CRITERIA_KEYS = [
   { id: 'attendance', label: 'Attendance', icon: 'fa-user-check' },
