@@ -734,26 +734,195 @@ function downloadPDFReport() {
 /* ==========================================================================
    EVENT LISTENERS & MODAL CONTROLLERS
    ========================================================================== */
-function setupEventListeners() {
-  // Class Select Change
-  document.getElementById('classSelect').addEventListener('change', (e) => {
-    appState.currentClassId = e.value || e.target.value;
-    // Set default lesson for class
-    const classLessons = appState.lessons.filter(l => l.classId === appState.currentClassId);
-    if (classLessons.length > 0) {
-      appState.currentLessonId = classLessons[0].id;
+/* ==========================================================================
+   EVENT LISTENERS & MODAL CONTROLLERS (FIXED & MERGED)
+   ========================================================================== */
+   function setupEventListeners() {
+  
+    // === 1. AUTH FORM SUBMIT (MOVED & CONTROLLED HERE) ===
+    const authForm = document.getElementById('authForm');
+    if (authForm) {
+      authForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+  
+        const email = document.getElementById('emailInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+        const errorElement = document.getElementById('authError');
+        const loginButton = document.getElementById('btnLogin');
+  
+        errorElement.textContent = '';
+        loginButton.disabled = true;
+        loginButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+  
+        const success = await loginStaff(email, password);
+  
+        if (success) {
+          hideAuthOverlay(); // Clears overlay, pointer shield, and transparency safely
+          await loadDataFromStorage(); // Fetches clean state from Supabase
+          renderApp(); // Redraws app framework so empty checks pass
+        } else {
+          errorElement.textContent = 'Invalid email or password.';
+          loginButton.disabled = false;
+          loginButton.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Log In';
+        }
+      });
     }
-    saveDataToStorage();
-    renderApp();
-  });
-
-  // Lesson Select Change
-  document.getElementById('lessonSelect').addEventListener('change', (e) => {
-    appState.currentLessonId = e.target.value;
-    saveDataToStorage();
-    renderApp();
-  });
-
+  
+    // === 2. APPLICATION CORE INTERACTION BUTTONS ===
+    
+    // Settings Button - Fixed and now triggers safely
+    const btnSettings = document.getElementById('btnSettings');
+    if (btnSettings) {
+      btnSettings.addEventListener('click', () => {
+        document.getElementById('settingCenterName').value = appState.centerName || 'My Community Center';
+        document.getElementById('settingPasscode').value = appState.passcode || '1234';
+        document.getElementById('settingMaxScore').value = appState.maxDictationScore || 10;
+        openModal('settingsModal');
+      });
+    }
+  
+    // Manage Classes Button - Opens panel manually without class prerequisites
+    const btnManageClasses = document.getElementById('btnManageClasses');
+    if (btnManageClasses) {
+      btnManageClasses.addEventListener('click', openManageClassesModal);
+    }
+  
+    // New Lesson Button
+    const btnNewLesson = document.getElementById('btnNewLesson');
+    if (btnNewLesson) {
+      btnNewLesson.addEventListener('click', () => {
+        document.getElementById('newLessonDate').value = new Date().toISOString().split('T')[0];
+        openModal('addLessonModal');
+      });
+    }
+  
+    // Class Select Change
+    document.getElementById('classSelect').addEventListener('change', (e) => {
+      appState.currentClassId = e.value || e.target.value;
+      const classLessons = appState.lessons.filter(l => l.classId === appState.currentClassId);
+      if (classLessons.length > 0) {
+        appState.currentLessonId = classLessons[0].id;
+      }
+      saveDataToStorage();
+      renderApp();
+    });
+  
+    // Lesson Select Change
+    document.getElementById('lessonSelect').addEventListener('change', (e) => {
+      appState.currentLessonId = e.target.value;
+      saveDataToStorage();
+      renderApp();
+    });
+  
+    // Date Picker Change
+    document.getElementById('lessonDatePicker').addEventListener('change', (e) => {
+      const currLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
+      if (currLesson) {
+        currLesson.date = e.target.value;
+        saveDataToStorage();
+        renderLessonSelector();
+      }
+    });
+  
+    // Search Bar Filter
+    document.getElementById('searchInput').addEventListener('input', () => {
+      renderTable();
+    });
+  
+    // Lock Button
+    document.getElementById('btnLock').addEventListener('click', () => {
+      appState.isUnlocked = false;
+      saveDataToStorage();
+      showAuthOverlay();
+    });
+  
+    // Theme Toggle
+    document.getElementById('btnThemeToggle').addEventListener('click', () => {
+      appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+      saveDataToStorage();
+      document.documentElement.setAttribute('data-theme', appState.theme);
+    });
+  
+    // Closures & Backdrops
+    document.getElementById('btnCloseSettingsModal').addEventListener('click', () => closeModal('settingsModal'));
+    document.getElementById('btnCancelSettings').addEventListener('click', () => closeModal('settingsModal'));
+    document.getElementById('settingsForm').addEventListener('submit', handleSaveSettings);
+    document.getElementById('btnCloseManageClassesModal').addEventListener('click', () => closeModal('manageClassesModal'));
+    document.getElementById('btnCloseClassesFooter').addEventListener('click', () => closeModal('manageClassesModal'));
+    document.getElementById('addClassForm').addEventListener('submit', handleAddClass);
+    document.getElementById('btnCloseAddLessonModal').addEventListener('click', () => closeModal('addLessonModal'));
+    document.getElementById('btnCancelAddLesson').addEventListener('click', () => closeModal('addLessonModal'));
+    document.getElementById('addLessonForm').addEventListener('submit', handleAddLesson);
+    document.getElementById('btnCloseReportModal').addEventListener('click', () => closeModal('reportModal'));
+  
+    // Add Student Modals
+    document.getElementById('btnAddStudent').addEventListener('click', () => {
+      populateStudentClassSelect();
+      openModal('addStudentModal');
+    });
+    document.getElementById('btnCloseAddStudentModal').addEventListener('click', () => closeModal('addStudentModal'));
+    document.getElementById('btnCancelAddStudent').addEventListener('click', () => closeModal('addStudentModal'));
+    document.getElementById('addStudentForm').addEventListener('submit', handleAddStudent);
+  
+    // Settings Panel Reset Features
+    document.getElementById('btnResetSampleData').addEventListener('click', () => {
+      if (confirm('Load sample demonstration data? Existing records will be reset.')) {
+        loadSampleData();
+        closeModal('settingsModal');
+        renderApp();
+      }
+    });
+  
+    document.getElementById('btnClearAllData').addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+        appState.students = [];
+        appState.evaluations = {};
+        saveDataToStorage();
+        closeModal('settingsModal');
+        renderApp();
+      }
+    });
+  
+    // Bulk Tools & Formatting Extensions
+    document.getElementById('btnBatchMarkAll').addEventListener('click', () => {
+      const batchBar = document.getElementById('batchBar');
+      batchBar.style.display = batchBar.style.display === 'none' ? 'flex' : 'none';
+    });
+    document.getElementById('btnCloseBatchBar').addEventListener('click', () => {
+      document.getElementById('batchBar').style.display = 'none';
+    });
+    document.getElementById('btnMarkAllAttendance').addEventListener('click', () => {
+      const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
+      currentStudents.forEach(s => {
+        const evalKey = `${appState.currentLessonId}_${s.id}`;
+        if (!appState.evaluations[evalKey]) appState.evaluations[evalKey] = { dictationMark: 0, criteria: {}, notes: '' };
+        appState.evaluations[evalKey].criteria.attendance = true;
+      });
+      saveDataToStorage(); renderTable(); updateStatsSummary();
+    });
+    document.getElementById('btnMarkAllHW').addEventListener('click', () => {
+      const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
+      currentStudents.forEach(s => {
+        const evalKey = `${appState.currentLessonId}_${s.id}`;
+        if (!appState.evaluations[evalKey]) appState.evaluations[evalKey] = { dictationMark: 0, criteria: {}, notes: '' };
+        appState.evaluations[evalKey].criteria.hw = true;
+      });
+      saveDataToStorage(); renderTable(); updateStatsSummary();
+    });
+  
+    document.getElementById('btnExportCSV').addEventListener('click', exportToCSV);
+    if (document.getElementById('btnDownloadClassPDF')) document.getElementById('btnDownloadClassPDF').addEventListener('click', openGlobalReportModal);
+    if (document.getElementById('btnCloseGlobalReportModal')) document.getElementById('btnCloseGlobalReportModal').addEventListener('click', () => closeModal('globalReportModal'));
+    if (document.getElementById('btnPrintGlobalReport')) document.getElementById('btnPrintGlobalReport').addEventListener('click', () => window.print());
+    if (document.getElementById('btnDownloadGlobalPDF')) document.getElementById('btnDownloadGlobalPDF').addEventListener('click', downloadGlobalClassPDF);
+    document.getElementById('btnAnalytics').addEventListener('click', openAnalyticsModal);
+    document.getElementById('btnCloseAnalyticsModal').addEventListener('click', () => closeModal('analyticsModal'));
+    document.getElementById('btnCopyReportText').addEventListener('click', (e) => {
+      const text = e.target.dataset.shareText || document.getElementById('btnCopyReportText').dataset.shareText;
+      if (text) navigator.clipboard.writeText(text).then(() => alert('Report summary copied!'));
+    });
+  }
+  
   // Date Picker Change
   document.getElementById('lessonDatePicker').addEventListener('change', (e) => {
     const currLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
@@ -944,7 +1113,7 @@ function setupEventListeners() {
   // Analytics Button
   document.getElementById('btnAnalytics').addEventListener('click', openAnalyticsModal);
   document.getElementById('btnCloseAnalyticsModal').addEventListener('click', () => closeModal('analyticsModal'));
-}
+
 
 /* ==========================================================================
    CLASS, GRADE & GROUP MANAGEMENT
