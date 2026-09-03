@@ -16,7 +16,6 @@
    
    var supabase = window.supabaseClientInstance;
    
-   // Clean workspace definition defaults to shield against empty database returns
    let appState = {
      isUnlocked: false,
      passcode: window.DEFAULT_PASSCODE,
@@ -453,6 +452,7 @@
      const evalKey = `${appState.currentLessonId}_${student.id}`;
      const evalData = appState.evaluations[evalKey] || { dictationMark: 0, criteria: {}, notes: '' };
      const reportContainer = document.getElementById('reportCardContent');
+     if (!reportContainer) return;
      
      let passedCount = 0;
      CRITERIA_KEYS.forEach(c => {
@@ -477,15 +477,15 @@
      CRITERIA_KEYS.forEach(c => {
        const isPassed = evalData.criteria && evalData.criteria[c.id];
        skillsHTML += `
-         <div style="display: flex; align-items: center; justify-content: space-between; background: \${isPassed ? '#f0fdf4' : '#f8fafc'}; border: 1px solid \${isPassed ? '#86efac' : '#e2e8f0'}; padding: 12px 16px; border-radius: 12px;">
+         <div style="display: flex; align-items: center; justify-content: space-between; background: ${isPassed ? '#f0fdf4' : '#f8fafc'}; border: 1px solid ${isPassed ? '#86efac' : '#e2e8f0'}; padding: 12px 16px; border-radius: 12px;">
            <div style="display: flex; align-items: center; gap: 10px;">
-             <i class="fa-solid \${c.icon}" style="color: \${isPassed ? '#10b981' : '#94a3b8'}; font-size: 15px;"></i>
-             <span style="font-weight: 700; font-size: 14px; color: \${isPassed ? '#0f172a' : '#64748b'};">\${c.label}</span>
+             <i class="fa-solid ${c.icon}" style="color: ${isPassed ? '#10b981' : '#94a3b8'}; font-size: 15px;"></i>
+             <span style="font-weight: 700; font-size: 14px; color: ${isPassed ? '#0f172a' : '#64748b'};">${c.label}</span>
            </div>
-           <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: \ Bell ? '#059669' : '#94a3b8';">
-             <span>\${isPassed ? 'Achieved' : 'Pending'}</span>
-             <span style="width: 22px; height: 22px; background: 	ext = isPassed ? '#10b981' : '#cbd5e1'; color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900;">
-               \${isPassed ? '✔' : '✖'}
+           <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: ${isPassed ? '#059669' : '#94a3b8'};">
+             <span>${isPassed ? 'Achieved' : 'Pending'}</span>
+             <span style="width: 22px; height: 22px; background: ${isPassed ? '#10b981' : '#cbd5e1'}; color: #ffffff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900;">
+               ${isPassed ? '✔' : '✖'}
              </span>
            </div>
          </div>
@@ -496,60 +496,139 @@
      reportContainer.dataset.lessonTitle = currentLesson.title;
    
      reportContainer.innerHTML = `
-       <div class="report-pdf-wrapper" style="background: #ffffff; color: #0f172a; border-radius: 16px; overflow: hidden; padding-bottom: 24px; font-family: sans-serif; text-align: left;">
+       <div class="report-pdf-wrapper" style="background: #ffffff; color: #0f172a; border-radius: 16px; overflow: hidden; padding-bottom: 24px; font-family: sans-serif;">
          <div style="background: linear-gradient(135deg, #059669 0%, #10b981 50%, #2563eb 100%); padding: 26px 30px; color: #ffffff;">
-           <h2 style="margin: 0; font-size: 22px; font-weight: 800;">\${escapeHtml(appState.centerName)}</h2>
+           <h2 style="margin: 0; font-size: 22px; font-weight: 800;">${escapeHtml(appState.centerName)}</h2>
            <div style="font-size: 11px; opacity: 0.9; margin-top: 4px;">OFFICIAL PERFORMANCE REPORT CARD</div>
          </div>
          <div style="padding: 24px 30px;">
-           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; font-size: 14px;">
-             <div><strong>Student:</strong> \${escapeHtml(student.name)}</div>
-             <div><strong>Class:</strong> \${escapeHtml(currentClass ? currentClass.name : '')}</div>
-             <div><strong>Topic:</strong> \${escapeHtml(currentLesson.title)}</div>
-             <div><strong>Date:</strong> \${currentLesson.date}</div>
+           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+             <div><strong>Student:</strong> ${escapeHtml(student.name)}</div>
+             <div><strong>Class:</strong> ${escapeHtml(currentClass ? currentClass.name : '')}</div>
+             <div><strong>Topic:</strong> ${escapeHtml(currentLesson.title)}</div>
+             <div><strong>Date:</strong> ${currentLesson.date}</div>
            </div>
            <div style="background: #ecfdf5; border: 2px solid #10b981; padding: 20px; border-radius: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
              <div>
-               <span style="font-size: 12px; color: #047857; font-weight: bold;">DICTATION MARK</span>
-               <div style="font-size: 32px; font-weight: 900; color: #059669;">\${evalData.dictationMark} / \ Professional = appState.maxDictationScore}</div>
+               <span style="font-size: 12px; color: #047857;">DICTATION MARK</span>
+               <div style="font-size: 32px; font-weight: 900; color: #059669;">${evalData.dictationMark} / ${appState.maxDictationScore}</div>
              </div>
-             <div style="background: #10b981; color: #ffffff; padding: 8px 16px; border-radius: 20px; font-weight: bold;">\${gradeObj.label}</div>
+             <div style="text-align: right;">
+               <div style="background: #10b981; color: #ffffff; padding: 8px 16px; border-radius: 20px; font-weight: bold;">${gradeObj.label}</div>
+               <div style="font-size: 12px; color: #475569; font-weight: 700; margin-top: 8px;">Skill Mastery: <strong style="color: #059669;">${completionPct}%</strong></div>
+             </div>
            </div>
            <div style="margin-bottom: 24px;">
-             <h4 style="margin-bottom: 12px; font-size: 16px; font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">Core Criteria Checklist</h4>
-             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">\${skillsHTML}</div>
+             <h4 style="margin-bottom: 12px;">Core Criteria Checklist</h4>
+             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">${skillsHTML}</div>
            </div>
-           <div style="background: #f8fafc; border-left: 5px solid #10b981; padding: 18px; border-radius: 4px; font-size: 14px; line-height: 1.5;">
-             <strong>Feedback:</strong> "\${escapeHtml(teacherComment)}"
+           <div style="background: #f8fafc; border-left: 5px solid #10b981; padding: 18px; border-radius: 4px;">
+             <strong>Feedback:</strong> "${escapeHtml(teacherComment)}"
            </div>
          </div>
        </div>
      `;
    
-     const shareText = `🎓 *\${appState.centerName} - Student Report Card*
-   
-   👤 *Student:* \${student.name}
-   📚 *Lesson:* \${currentLesson.title}
-   ✍ *Dictation:* \${evalData.dictationMark}/\${appState.maxDictationScore}
-   🌟 *Grade:* \${gradeObj.label}
-   
-   📝 *Notes:* \${teacherComment}`;
+     const shareText = `🎓 *${appState.centerName} - Student Report Card*\n\n👤 *Student:* ${student.name}\n📚 *Lesson:* ${currentLesson.title}\n✍️ *Dictation:* ${evalData.dictationMark}/${appState.maxDictationScore}\n🌟 *Grade:* ${gradeObj.label}\n\n📝 *Notes:* ${teacherComment}`;
      document.getElementById('btnCopyReportText').dataset.shareText = shareText;
    
      openModal('reportModal');
    }
    
-   function downloadPDFReport() {
-     const element = document.getElementById('reportCardContent');
-     const studentName = element.dataset.studentName || 'Student';
+   function openGlobalReportModal() {
+     const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
+     const currentClass = appState.classes.find(c => c.id === appState.currentClassId);
+     const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
+   
+     if (currentStudents.length === 0) {
+       alert('No students found in this class to generate report.');
+       return;
+     }
+   
+     let tableRowsHTML = '';
+     currentStudents.forEach((student, idx) => {
+       const evalKey = `${appState.currentLessonId}_${student.id}`;
+       const ev = appState.evaluations[evalKey] || { dictationMark: 0, criteria: {}, notes: '' };
+       const gradeObj = calculateGrade(ev.dictationMark);
+       const cr = ev.criteria || {};
+   
+       tableRowsHTML += `
+         <tr>
+           <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center;">${idx + 1}</td>
+           <td style="border: 1px solid #bfc5cc; padding: 6px 8px; font-weight: 600; text-align: left;">${escapeHtml(student.name)}</td>
+           <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center;">${ev.dictationMark || 0}/${appState.maxDictationScore}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.attendance ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.hw ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.listening ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.reading ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.speaking ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.writing ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.video ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center; font-weight: 700;">${gradeObj.label}</td>
+           <td style="border: 1px solid #bfc5cc; padding: 6px 8px; text-align: left;">${escapeHtml(ev.notes || '')}</td>
+         </tr>
+       `;
+     });
+   
+     const reportElement = document.getElementById('globalReportCardContent');
+     if (!reportElement) return;
+   
+     reportElement.innerHTML = `
+       <div style="background: #ffffff; color: #111827; padding: 24px; font-family: Arial, sans-serif;">
+         <div style="text-align: center; padding-bottom: 16px; border-bottom: 2px solid #374151; margin-bottom: 16px;">
+           <div style="font-size: 22px; font-weight: 800; text-transform: uppercase;">${escapeHtml(appState.centerName)}</div>
+           <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">STUDENT PERFORMANCE DASHBOARD</div>
+         </div>
+         <div style="text-align: center; margin-bottom: 18px;">
+           <div style="font-size: 18px; font-weight: 700;">${escapeHtml(currentClass ? currentClass.name : '')}</div>
+           <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Date: ${currentLesson ? currentLesson.date : ''}</div>
+         </div>
+         <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #9ca3af;">
+           <thead>
+             <tr style="background: #e5e7eb; color: #111827; font-weight: 700;">
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px; width: 30px;">#</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 6px; text-align: left;">Student Name</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Dictation</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Att.</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">H.W.</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">List.</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Read.</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Spek.</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Writ.</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Vid.</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Grade</th>
+               <th style="border: 1px solid #9ca3af; padding: 7px 6px; text-align: left; width: 20%;">Notes</th>
+             </tr>
+           </thead>
+           <tbody>
+             ${tableRowsHTML}
+           </tbody>
+         </table>
+       </div>
+     `;
+   
+     reportElement.dataset.className = currentClass ? currentClass.name : 'Class';
+     reportElement.dataset.lessonTitle = currentLesson ? currentLesson.title : 'Lesson';
+   
+     openModal('globalReportModal');
+   }
+   
+   function downloadGlobalClassPDF() {
+     const element = document.getElementById('globalReportCardContent');
+     if (!element) {
+       console.error('globalReportCardContent element not found');
+       return;
+     }
+   
+     const className = element.dataset.className || 'Class';
      const lessonTitle = element.dataset.lessonTitle || 'Lesson';
    
      const opt = {
-       margin: [8, 8, 8, 8],
-       filename: `Report_\${studentName.replace(/\s+/g, '_')}_\ Bell = lessonTitle.replace(/\s+/g, '_')}.pdf`,
+       margin: 6,
+       filename: `Global_Class_Report_${className.replace(/\s+/g, '_')}_${lessonTitle.replace(/\s+/g, '_')}.pdf`,
        image: { type: 'jpeg', quality: 0.98 },
        html2canvas: { scale: 2, useCORS: true, logging: false },
-       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
      };
    
      if (typeof html2pdf !== 'undefined') {
@@ -559,14 +638,103 @@
      }
    }
    
+   function openAnalyticsModal() {
+     const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
+     const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
+     const container = document.getElementById('analyticsBody');
+     if (!container) return;
+   
+     if (currentStudents.length === 0) {
+       container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No student data available for analytics.</p>';
+       openModal('analyticsModal');
+       return;
+     }
+   
+     const skillStats = {};
+     CRITERIA_KEYS.forEach(c => { skillStats[c.id] = 0; });
+   
+     currentStudents.forEach(s => {
+       const evalKey = `${appState.currentLessonId}_${s.id}`;
+       const ev = appState.evaluations[evalKey];
+       if (ev && ev.criteria) {
+         CRITERIA_KEYS.forEach(c => {
+           if (ev.criteria[c.id]) skillStats[c.id]++;
+         });
+       }
+     });
+   
+     let skillBarsHTML = '';
+     CRITERIA_KEYS.forEach(c => {
+       const count = skillStats[c.id];
+       const pct = Math.round((count / currentStudents.length) * 100);
+       skillBarsHTML += `
+         <div style="margin-bottom: 14px;">
+           <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px;">
+             <span><i class="fa-solid ${c.icon}"></i> ${c.label}</span>
+             <span>${count} / ${currentStudents.length} (${pct}%)</span>
+           </div>
+           <div style="width: 100%; background: var(--bg-input); height: 10px; border-radius: 5px; overflow: hidden;">
+             <div style="width: ${pct}%; background: var(--primary); height: 100%; border-radius: 5px;"></div>
+           </div>
+         </div>
+       `;
+     });
+   
+     container.innerHTML = `
+       <div style="margin-bottom: 20px;">
+         <h4>Lesson Summary: ${escapeHtml(currentLesson ? currentLesson.title : 'General Log')}</h4>
+         <p style="font-size: 13px; color: var(--text-muted);">Class Evaluation & Skill Mastery Distribution Chart</p>
+       </div>
+       ${skillBarsHTML}
+     `;
+   
+     openModal('analyticsModal');
+   }
+   
+   function exportToCSV() {
+     const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
+     const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
+   
+     if (currentStudents.length === 0) {
+       alert('No data to export.');
+       return;
+     }
+   
+     let csvContent = 'data:text/csv;charset=utf-8,';
+     csvContent += 'Student Name,Dictation Mark,Attendance,HW,Listening,Reading,Speaking,Writing,Video,Notes\n';
+   
+     currentStudents.forEach(s => {
+       const evalKey = `${appState.currentLessonId}_${s.id}`;
+       const ev = appState.evaluations[evalKey] || { dictationMark: 0, criteria: {}, notes: '' };
+       const cr = ev.criteria || {};
+   
+       const row = [
+         `"${s.name.replace(/"/g, '""')}"`,
+         ev.dictationMark || 0,
+         cr.attendance ? 'YES' : 'NO',
+         cr.hw ? 'YES' : 'NO',
+         cr.listening ? 'YES' : 'NO',
+         cr.reading ? 'YES' : 'NO',
+         cr.speaking ? 'YES' : 'NO',
+         cr.writing ? 'YES' : 'NO',
+         cr.video ? 'YES' : 'NO',
+         `"${(ev.notes || '').replace(/"/g, '""')}"`
+       ];
+       csvContent += row.join(',') + '\n';
+     });
+   
+     const encodedUri = encodeURI(csvContent);
+     const link = document.createElement('a');
+     link.setAttribute('href', encodedUri);
+     link.setAttribute('download', `Report_${currentLesson ? currentLesson.title.replace(/[^a-zA-Z0-9]/g, '_') : 'lesson'}.csv`);
+     document.body.appendChild(link);
+     link.click();
+     document.body.removeChild(link);
+   }
+   
    /* ==========================================================================
       8. COMPACT FRAMEWORK MANAGER WINDOWS
       ========================================================================== */
-   function openManageClassesModal() {
-     renderClassList();
-     openModal('manageClassesModal');
-   }
-   
    function renderClassList() {
      const container = document.getElementById('classListContainer');
      if (!container) return;
@@ -583,10 +751,10 @@
        div.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: var(--bg-input); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 8px;';
        div.innerHTML = `
          <div>
-           <div style="font-weight: 700; color: var(--text-main);">\${escapeHtml(c.name)}</div>
-           <div style="font-size: 11px; color: #10b981; margin-top: 4px;">\${studentCount} Registered Students</div>
+           <div style="font-weight: 700; color: var(--text-main);">${escapeHtml(c.name)}</div>
+           <div style="font-size: 11px; color: #10b981; margin-top: 4px;">${studentCount} Registered Students</div>
          </div>
-         <button class="btn-icon" style="color: var(--accent-rose);" onclick="deleteClass('\${c.id}')"><i class="fa-solid fa-trash-can"></i></button>
+         <button class="btn-icon" style="color: var(--accent-rose);" onclick="deleteClass('${c.id}')"><i class="fa-solid fa-trash-can"></i></button>
        `;
        container.appendChild(div);
      });
@@ -604,11 +772,12 @@
    
      if (!name) return;
    
-     const newClassId = `cls_\${Date.now()}`;
+     const newClassId = `cls_${Date.now()}`;
      appState.classes.push({ id: newClassId, name, grade: grade || 'General', group: group || 'General' });
    
-     const newLessonId = `les_\${Date.now()}`;
-     appState.lessons.push({ id: newLessonId, classId: newClassId, title: 'Lesson 1 - Evaluation Log', date: new Date().toISOString().split('T')[0] });
+     const newLessonId = `les_${Date.now()}`;
+     const todayStr = new Date().toISOString().split('T')[0];
+     appState.lessons.push({ id: newLessonId, classId: newClassId, title: 'Lesson 1 - Evaluation Log', date: todayStr });
    
      appState.currentClassId = newClassId;
      appState.currentLessonId = newLessonId;
@@ -666,10 +835,10 @@
      if (!name) return;
    
      const targetClassId = classSelect ? classSelect.value : appState.currentClassId;
-     const newStudentId = `std_\${Date.now()}`;
+     const newStudentId = `std_${Date.now()}`;
      appState.students.push({ id: newStudentId, classId: targetClassId, name });
    
-     const evalKey = `${appState.currentLessonId}_\${newStudentId}`;
+     const evalKey = `${appState.currentLessonId}_${newStudentId}`;
      appState.evaluations[evalKey] = {
        dictationMark: parseFloat(document.getElementById('studentInitialDictation').value) || 0,
        criteria: { attendance: true, hw: true, listening: true, reading: true, speaking: true, writing: true, video: true },
@@ -690,7 +859,7 @@
      const date = document.getElementById('newLessonDate').value;
      if (!title || !date) return;
    
-     const newLessonId = `les_\${Date.now()}`;
+     const newLessonId = `les_${Date.now()}`;
      appState.lessons.push({ id: newLessonId, classId: appState.currentClassId, title, date });
      appState.currentLessonId = newLessonId;
    
@@ -720,164 +889,10 @@
      }
    }
    
-   function openGlobalReportModal() {
-     const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
-     const currentClass = appState.classes.find(c => c.id === appState.currentClassId);
-     const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
-   
-     if (currentStudents.length === 0) {
-       alert('No students found in this class to generate report.');
-       return;
-     }
-   
-     let tableRowsHTML = '';
-     currentStudents.forEach((student, idx) => {
-       const evalKey = `\${appState.currentLessonId}_\${student.id}`;
-       const ev = appState.evaluations[evalKey] || { dictationMark: 0, criteria: {}, notes: '' };
-       const gradeObj = calculateGrade(ev.dictationMark);
-       const cr = ev.criteria || {};
-   
-       tableRowsHTML += `
-         <tr>
-           <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center;">\${idx + 1}</td>
-           <td style="border: 1px solid #bfc5cc; padding: 6px 8px; font-weight: 600; text-align: left;">\${escapeHtml(student.name)}</td>
-           <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center;">\${ev.dictationMark || 0}/\${appState.maxDictationScore}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">\${cr.attendance ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">\${cr.hw ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">\${cr.listening ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">\${cr.reading ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">\${cr.speaking ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">\${cr.writing ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">\${cr.video ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center; font-weight: 700;">\hat = gradeObj.label}</td>
-           <td style="border: 1px solid #bfc5cc; padding: 6px 8px; text-align: left;">\${escapeHtml(ev.notes || '')}</td>
-         </tr>
-       `;
-     });
-   
-     document.getElementById('globalReportCardContent').innerHTML = `
-       <div style="background: #ffffff; color: #111827; padding: 24px; font-family: Arial, sans-serif;">
-         <div style="text-align: center; padding-bottom: 16px; border-bottom: 2px solid #374151; margin-bottom: 16px;">
-           <div style="font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">\${escapeHtml(appState.centerName)}</div>
-           <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">STUDENT PERFORMANCE SUMMARY</div>
-         </div>
-         <div style="text-align: center; margin-bottom: 18px;">
-           <div style="font-size: 18px; font-weight: 700;">\${escapeHtml(currentClass ? currentClass.name : '')}</div>
-           <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Lesson: \${escapeHtml(currentLesson ? currentLesson.title : '')} | Date: \${currentLesson ? currentLesson.date : ''}</div>
-         </div>
-         <table style="width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #9ca3af;">
-           <thead>
-             <tr style="background: #e5e7eb; color: #111827; font-weight: 700;">
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px; width: 30px;">#</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 6px; text-align: left;">Student Name</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Dictation</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Att.</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">H.W.</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">List.</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Read.</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Spek.</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Writ.</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Vid.</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 4px;">Grade</th>
-               <th style="border: 1px solid #9ca3af; padding: 7px 6px; text-align: left; width: 20%;">Notes</th>
-             </tr>
-           </thead>
-           <tbody>
-             \${tableRowsHTML}
-           </tbody>
-         </table>
-       </div>
-     `;
-   
-     const reportElement = document.getElementById('globalReportCardContent');
-     reportElement.dataset.className = currentClass ? currentClass.name : 'Class';
-     reportElement.dataset.lessonTitle = currentLesson ? currentLesson.title : 'Lesson';
-   
-     openModal('globalReportModal');
-   }
-   
-   function downloadGlobalClassPDF() {
-     const element = document.getElementById('globalReportCardContent');
-     if (!element) return;
-   
-     const className = element.dataset.className || 'Class';
-     const lessonTitle = element.dataset.lessonTitle || 'Lesson';
-   
-     const opt = {
-       margin: [6, 6, 6, 6],
-       filename: `Global_Class_Report_\${className.replace(/\s+/g, '_')}_\ Bell = lessonTitle.replace(/\s+/g, '_')}.pdf`,
-       image: { type: 'jpeg', quality: 0.98 },
-       html2canvas: { scale: 2, useCORS: true, logging: false },
-       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-     };
-   
-     if (typeof html2pdf !== 'undefined') {
-       html2pdf().set(opt).from(element).save();
-     } else {
-       window.print();
-     }
-   }
-   
-   function openAnalyticsModal() {
-     const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
-     const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
-   
-     const container = document.getElementById('analyticsBody');
-     if (!container) return;
-     
-     if (currentStudents.length === 0) {
-       container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No student data available for analytics.</p>';
-       openModal('analyticsModal');
-       return;
-     }
-   
-     const skillStats = {};
-     CRITERIA_KEYS.forEach(c => { skillStats[c.id] = 0; });
-   
-     currentStudents.forEach(s => {
-       const evalKey = `\${appState.currentLessonId}_\${s.id}`;
-       const ev = appState.evaluations[evalKey];
-       if (ev && ev.criteria) {
-         CRITERIA_KEYS.forEach(c => {
-           if (ev.criteria[c.id]) skillStats[c.id]++;
-         });
-       }
-     });
-   
-     let skillBarsHTML = '';
-     CRITERIA_KEYS.forEach(c => {
-       const count = skillStats[c.id];
-       const pct = Math.round((count / currentStudents.length) * 100);
-       skillBarsHTML += `
-         <div style="margin-bottom: 14px; text-align: left;">
-           <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; margin-bottom: 4px;">
-             <span><i class="fa-solid \${c.icon}"></i> \${c.label}</span>
-             <span>\${count} / \${currentStudents.length} (\${pct}%)</span>
-           </div>
-           <div style="width: 100%; background: var(--bg-input); height: 10px; border-radius: 5px; overflow: hidden;">
-             <div style="width: \${pct}%; background: var(--primary); height: 100%; border-radius: 5px;"></div>
-           </div>
-         </div>
-       `;
-     });
-   
-     container.innerHTML = `
-       <div style="margin-bottom: 20px; text-align: left;">
-         <h4>Lesson Summary: \${escapeHtml(currentLesson ? currentLesson.title : '')}</h4>
-         <p style="font-size: 13px; color: var(--text-muted);">Class Evaluation & Skill Mastery Distribution</p>
-       </div>
-       \${skillBarsHTML}
-     `;
-   
-     openModal('analyticsModal');
-   }
-   
    /* ==========================================================================
       9. GLOBAL SYNCHRONIZED INTERACTION LISTENERS SYSTEM
       ========================================================================== */
    function setupEventListeners() {
-     
-     // Submit Listener for Authentication Dashboard Interface Form
      const authForm = document.getElementById('authForm');
      if (authForm) {
        authForm.addEventListener('submit', async (event) => {
@@ -904,7 +919,6 @@
        });
      }
    
-     // Application Settings Module Interface Configuration
      const btnSettings = document.getElementById('btnSettings');
      if (btnSettings) {
        btnSettings.addEventListener('click', () => {
@@ -936,53 +950,34 @@
        });
      }
    
-     // Dashboard Selector Mutation Actions
-     const classSelect = document.getElementById('classSelect');
-     if (classSelect) {
-       classSelect.addEventListener('change', (e) => {
-         appState.currentClassId = e.target.value;
-         const cl = appState.lessons.filter(l => l.classId === appState.currentClassId);
-         if (cl.length > 0) appState.currentLessonId = cl[0].id;
-         saveDataToStorage(); renderApp();
-       });
-     }
+     document.getElementById('classSelect').addEventListener('change', (e) => {
+       appState.currentClassId = e.target.value;
+       const cl = appState.lessons.filter(l => l.classId === appState.currentClassId);
+       if (cl.length > 0) appState.currentLessonId = cl[0].id;
+       saveDataToStorage(); renderApp();
+     });
    
-     const lessonSelect = document.getElementById('lessonSelect');
-     if (lessonSelect) {
-       lessonSelect.addEventListener('change', (e) => {
-         appState.currentLessonId = e.target.value;
-         saveDataToStorage(); renderApp();
-       });
-     }
+     document.getElementById('lessonSelect').addEventListener('change', (e) => {
+       appState.currentLessonId = e.target.value;
+       saveDataToStorage(); renderApp();
+     });
    
-     const searchInput = document.getElementById('searchInput');
-     if (searchInput) {
-       searchInput.addEventListener('input', renderTable);
-     }
+     document.getElementById('searchInput').addEventListener('input', renderTable);
    
-     // Form Submission Routing Map hooks
      if (document.getElementById('addClassForm')) document.getElementById('addClassForm').addEventListener('submit', handleAddClass);
      if (document.getElementById('addStudentForm')) document.getElementById('addStudentForm').addEventListener('submit', handleAddStudent);
      if (document.getElementById('addLessonForm')) document.getElementById('addLessonForm').addEventListener('submit', handleAddLesson);
      if (document.getElementById('settingsForm')) document.getElementById('settingsForm').addEventListener('submit', handleSaveSettings);
    
-     // Theme & App Actions Toggle Triggers
-     const btnThemeToggle = document.getElementById('btnThemeToggle');
-     if (btnThemeToggle) {
-       btnThemeToggle.addEventListener('click', () => {
-         appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
-         saveDataToStorage(); renderApp();
-       });
-     }
+     document.getElementById('btnThemeToggle').addEventListener('click', () => {
+       appState.theme = appState.theme === 'dark' ? 'light' : 'dark';
+       saveDataToStorage(); renderApp();
+     });
    
-     const btnLock = document.getElementById('btnLock');
-     if (btnLock) {
-       btnLock.addEventListener('click', () => {
-         appState.isUnlocked = false; showAuthOverlay();
-       });
-     }
+     document.getElementById('btnLock').addEventListener('click', () => {
+       appState.isUnlocked = false; showAuthOverlay();
+     });
    
-     // Modal Structural Closure Hooks loop mapping system
      document.querySelectorAll('[id^="btnClose"], [id^="btnCancel"]').forEach(btn => {
        btn.addEventListener('click', (e) => {
          const modal = e.target.closest('.modal') || e.target.closest('[id$="Modal"]');
@@ -990,43 +985,26 @@
        });
      });
    
-     // Structural Demonstration Generator Hook Trigger
-     const btnResetSampleData = document.getElementById('btnResetSampleData');
-     if (btnResetSampleData) {
-       btnResetSampleData.addEventListener('click', () => {
-         if (confirm('Load demonstration mockup profiles? Existing workspace configurations will clear.')) {
-           loadSampleData(); closeModal('settingsModal'); renderApp();
-         }
-       });
-     }
+     document.getElementById('btnResetSampleData').addEventListener('click', () => {
+       if (confirm('Load demonstration mockup profiles? Existing workspace configurations will clear.')) {
+         loadSampleData(); closeModal('settingsModal'); renderApp();
+       }
+     });
    
-     const btnClearAllData = document.getElementById('btnClearAllData');
-     if (btnClearAllData) {
-       btnClearAllData.addEventListener('click', () => {
-         if (confirm('Clear workspace?')) {
-           appState.students = []; appState.classes = []; appState.lessons = []; appState.evaluations = {};
-           saveDataToStorage(); closeModal('settingsModal'); renderApp();
-         }
-       });
-     }
+     document.getElementById('btnClearAllData').addEventListener('click', () => {
+       if (confirm('Clear workspace?')) {
+         appState.students = []; appState.classes = []; appState.lessons = []; appState.evaluations = {};
+         saveDataToStorage(); closeModal('settingsModal'); renderApp();
+       }
+     });
    
-     // Document Management Export Framework triggers
-     if (document.getElementById('btnExportCSV')) document.getElementById('btnExportCSV').addEventListener('click', exportToCSV);
+     document.getElementById('btnExportCSV').addEventListener('click', exportToCSV);
      if (document.getElementById('btnDownloadClassPDF')) document.getElementById('btnDownloadClassPDF').addEventListener('click', openGlobalReportModal);
      if (document.getElementById('btnAnalytics')) document.getElementById('btnAnalytics').addEventListener('click', openAnalyticsModal);
      
      const btnDownloadGlobalPDF = document.getElementById('btnDownloadGlobalPDF');
-     if (btnDownloadGlobalPDF) btnDownloadGlobalPDF.addEventListener('click', downloadGlobalClassPDF);
-     
-     const btnDownloadPDF = document.getElementById('btnDownloadPDF');
-     if (btnDownloadPDF) btnDownloadPDF.addEventListener('click', downloadPDFReport);
-   
-     const btnCopyReportText = document.getElementById('btnCopyReportText');
-     if (btnCopyReportText) {
-       btnCopyReportText.addEventListener('click', (e) => {
-         const text = e.target.dataset.shareText || document.getElementById('btnCopyReportText').dataset.shareText;
-         if (text) navigator.clipboard.writeText(text).then(() => alert('Report summary copied!'));
-       });
+     if (btnDownloadGlobalPDF) {
+       btnDownloadGlobalPDF.addEventListener('click', downloadGlobalClassPDF);
      }
    }
    
