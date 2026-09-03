@@ -1,10 +1,21 @@
-const SUPABASE_URL = 'https://zvqxydftgxoeagmxqupx.supabase.co';
+// 1. Keep your initials exactly as they are
+const SUPABASE_URL = 'https://supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mxUxGtfnAAlsN1KR_45j-Q_kAWtDrIo';
 
-const supabase = window.supabase.createClient(
+// 2. Change 'const supabase' to 'const supabaseClient'
+const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_PUBLISHABLE_KEY
 );
+
+// 3. Paste your login function afterward, using the new name:
+async function signInWithEmail() {
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: 'albezawi27@gmail.com',
+    password: 'PolyMorph123',
+  });
+}
+
 /**
  * Teaching Center - Student Evaluation & Lesson Report Web App
  * JavaScript Engine
