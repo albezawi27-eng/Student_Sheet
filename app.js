@@ -1,19 +1,39 @@
-// 1. Keep your initials exactly as they are
+// 1. CONFIGURATION & CONFIG DEFAULTS
+// ==========================================
 const SUPABASE_URL = 'https://supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mxUxGtfnAAlsN1KR_45j-Q_kAWtDrIo';
 
-// 2. Change 'const supabase' to 'const supabaseClient'
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+const DEFAULT_PASSCODE = '1234'; 
+const DEFAULT_CENTER_NAME = 'My Community Center'; // <-- Put your clean text name here
 
-// 3. Paste your login function afterward, using the new name:
-async function signInWithEmail() {
+// ==========================================
+// 2. INITIALIZATION
+// ==========================================
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+let appState = {
+  isUnlocked: false,
+  passcode: DEFAULT_PASSCODE,
+  centerName: DEFAULT_CENTER_NAME,
+};
+
+// ==========================================
+// 3. LOGIN FUNCTION
+// ==========================================
+async function loginUser() {
   const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: 'albezawi27@gmail.com',
-    password: 'PolyMorph123',
+    email: 'your-actual-email@example.com', // <-- Put your Supabase email here
+    password: 'your-secret-password',      // <-- Put your Supabase password here
   });
+
+  if (error) {
+    console.error("Login failed:", error.message);
+  } else {
+    console.log("Logged in successfully!");
+    // If you WANT the center name to update to the email AFTER logging in, do it here:
+    appState.centerName = data.user.email; 
+    appState.isUnlocked = true;
+  }
 }
 
 /**
