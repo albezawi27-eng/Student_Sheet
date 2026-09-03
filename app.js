@@ -89,7 +89,7 @@
        if (data && data.data) {
          appState = { ...appState, ...data.data };
        } else {
-         console.log('No database records found. Ready to initialize clean dashboard frames.');
+         print('No database records found. Initializing frames.');
          appState.classes = appState.classes || [];
          appState.lessons = appState.lessons || [];
          appState.students = appState.students || [];
@@ -267,7 +267,7 @@
          <tr>
            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
              <i class="fa-solid fa-folder-open" style="font-size: 32px; margin-bottom: 10px; display: block;"></i>
-             No student evaluation records found. Click "Add Student" above or open settings to populate demonstration logs.
+             No student evaluation records found. Click "Add Student" above or open settings to populate logs.
            </td>
          </tr>
        `;
@@ -291,7 +291,7 @@
    
        const evalData = appState.evaluations[evalKey];
        const tr = document.createElement('tr');
-       const initials = student.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+       const initials = student.name.split(' ').map(n => n).join('').substring(0, 2).toUpperCase();
        const gradeObj = calculateGrade(evalData.dictationMark);
    
        let criteriaHTML = `<div class="criteria-pills-group">`;
@@ -557,13 +557,13 @@
            <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center;">${idx + 1}</td>
            <td style="border: 1px solid #bfc5cc; padding: 6px 8px; font-weight: 600; text-align: left;">${escapeHtml(student.name)}</td>
            <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center;">${ev.dictationMark || 0}/${appState.maxDictationScore}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.attendance ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.hw ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.listening ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.reading ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.speaking ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.writing ? '✓' : ''}</td>
-           <td style="border: 1px solid #bfc5cc; text-align: center;">${cr.video ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center; font-weight: bold; color: green;">${cr.attendance ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center; font-weight: bold; color: green;">${cr.hw ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center; font-weight: bold; color: green;">${cr.listening ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center; font-weight: bold; color: green;">${cr.reading ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center; font-weight: bold; color: green;">${cr.speaking ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center; font-weight: bold; color: green;">${cr.writing ? '✓' : ''}</td>
+           <td style="border: 1px solid #bfc5cc; text-align: center; font-weight: bold; color: green;">${cr.video ? '✓' : ''}</td>
            <td style="border: 1px solid #bfc5cc; padding: 6px 5px; text-align: center; font-weight: 700;">${gradeObj.label}</td>
            <td style="border: 1px solid #bfc5cc; padding: 6px 8px; text-align: left;">${escapeHtml(ev.notes || '')}</td>
          </tr>
@@ -577,7 +577,7 @@
        <div style="background: #ffffff; color: #111827; padding: 24px; font-family: Arial, sans-serif;">
          <div style="text-align: center; padding-bottom: 16px; border-bottom: 2px solid #374151; margin-bottom: 16px;">
            <div style="font-size: 22px; font-weight: 800; text-transform: uppercase;">${escapeHtml(appState.centerName)}</div>
-           <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">STUDENT PERFORMANCE DASHBOARD</div>
+           <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">STUDENT PERFORMANCE DASHBOARD Excel-View</div>
          </div>
          <div style="text-align: center; margin-bottom: 18px;">
            <div style="font-size: 18px; font-weight: 700;">${escapeHtml(currentClass ? currentClass.name : '')}</div>
@@ -733,7 +733,7 @@
    }
    
    /* ==========================================================================
-      8. COMPACT FRAMEWORK MANAGER WINDOWS
+      8. FRAMEWORK MANAGEMENT MODULE PANELS
       ========================================================================== */
    function renderClassList() {
      const container = document.getElementById('classListContainer');
@@ -790,7 +790,7 @@
    
    function deleteClass(classId) {
      if (appState.classes.length <= 1) {
-       alert('Cannot delete the last existing class frame.');
+       alert('Cannot delete the last remaining class frame.');
        return;
      }
      if (confirm('Delete this class and all associated student profiles permanently?')) {
@@ -813,7 +813,7 @@
      if (!select) return;
      
      if (!appState.classes || appState.classes.length === 0) {
-       alert("Please open 'Manage Classes' and build your first room log framework before registering profiles.");
+       alert("Please open 'Manage Classes' and build your class registry profile framework first.");
        return;
      }
    
@@ -978,11 +978,26 @@
        appState.isUnlocked = false; showAuthOverlay();
      });
    
-     document.querySelectorAll('[id^="btnClose"], [id^="btnCancel"]').forEach(btn => {
-       btn.addEventListener('click', (e) => {
-         const modal = e.target.closest('.modal') || e.target.closest('[id$="Modal"]');
-         if (modal) closeModal(modal.id);
-       });
+     // FIXED DIRECT MAPPING SYSTEM FOR MODAL CLOSING
+     const exitTriggers = [
+       { btnId: 'btnCloseSettingsModal', modalId: 'settingsModal' },
+       { btnId: 'btnCancelSettings', modalId: 'settingsModal' },
+       { btnId: 'btnCloseManageClassesModal', modalId: 'manageClassesModal' },
+       { btnId: 'btnCloseClassesFooter', modalId: 'manageClassesModal' },
+       { btnId: 'btnCloseAddStudentModal', modalId: 'addStudentModal' },
+       { btnId: 'btnCancelAddStudent', modalId: 'addStudentModal' },
+       { btnId: 'btnCloseAddLessonModal', modalId: 'addLessonModal' },
+       { btnId: 'btnCancelAddLesson', modalId: 'addLessonModal' },
+       { btnId: 'btnCloseReportModal', modalId: 'reportModal' },
+       { btnId: 'btnCloseGlobalReportModal', modalId: 'globalReportModal' },
+       { btnId: 'btnCloseAnalyticsModal', modalId: 'analyticsModal' }
+     ];
+   
+     exitTriggers.forEach(t => {
+       const el = document.getElementById(t.btnId);
+       if (el) {
+         el.addEventListener('click', () => closeModal(t.modalId));
+       }
      });
    
      document.getElementById('btnResetSampleData').addEventListener('click', () => {
