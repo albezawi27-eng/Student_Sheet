@@ -1,35 +1,25 @@
-// 1. CONFIGURATION & CONFIG DEFAULTS
-// ==========================================
+// 1. Assign configuration globally to window to prevent "already declared" errors
+window.DEFAULT_PASSCODE = '1234'; 
+window.DEFAULT_CENTER_NAME = 'My Community Center';
+
 const SUPABASE_URL = 'https://supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mxUxGtfnAAlsN1KR_45j-Q_kAWtDrIo';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mxUxGtfnAAlsN1KR_45j-Q_kAWtDrIo-Q_kAWtDrIo-Q_kAWtDrIo';
 
-const DEFAULT_PASSCODE = '1234'; 
-const DEFAULT_CENTER_NAME = 'My Community Center'; // <-- Put your clean text name here
+// 2. Name this variable EXACTLY 'supabase' so all your app's functions can find it
+window.supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 
-// ==========================================
-// 2. INITIALIZATION
-// ==========================================
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// 3. Make a local shortcut variable so your functions don't break
+const supabase = window.supabase;
 
+let appState = {
+  isUnlocked: false,
+  passcode: window.DEFAULT_PASSCODE,
+  centerName: window.DEFAULT_CENTER_NAME,
+};
 
-// ==========================================
-// 3. LOGIN FUNCTION
-// ==========================================
-async function loginUser() {
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: 'your-actual-email@example.com', // <-- Put your Supabase email here
-    password: 'your-secret-password',      // <-- Put your Supabase password here
-  });
-
-  if (error) {
-    console.error("Login failed:", error.message);
-  } else {
-    console.log("Logged in successfully!");
-    // If you WANT the center name to update to the email AFTER logging in, do it here:
-    appState.centerName = data.user.email; 
-    appState.isUnlocked = true;
-  }
-}
 
 /**
  * Teaching Center - Student Evaluation & Lesson Report Web App
