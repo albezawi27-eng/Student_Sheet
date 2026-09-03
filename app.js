@@ -1,4 +1,3 @@
-// 1. Assign configuration globally to window to prevent "already declared" errors
 window.DEFAULT_PASSCODE = '1234'; 
 window.DEFAULT_CENTER_NAME = 'My Community Center';
 
