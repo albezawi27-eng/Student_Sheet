@@ -49,14 +49,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupRealtimeSync();
 
   setupEventListeners();
-  setupNumpad();
-  
-  if (!appState.isUnlocked) {
-    showAuthOverlay();
-  } else {
-    hideAuthOverlay();
-    renderApp();
-  }
 });
 
 /* ==========================================================================
@@ -265,16 +257,19 @@ window.submitPasscodeUnlock = function() {
   }
 };
 
-function setupNumpad() {
-  const passInput = document.getElementById('passcodeInputField');
-  if (passInput) {
-    passInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        window.submitPasscodeUnlock();
-      }
-    });
+async function loginStaff(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    console.error(error);
+    alert('Invalid email or password');
+    return false;
   }
+
+  return true;
 }
 
 function handlePasscodeVal(val) {
