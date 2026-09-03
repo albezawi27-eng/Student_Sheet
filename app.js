@@ -38,45 +38,19 @@ const CRITERIA_KEYS = [
 let currentEnteredPasscode = '';
 
 // Initialize App on DOM Content Loaded
+// Keep the initialization block alive!
 document.addEventListener('DOMContentLoaded', async () => {
   await loadDataFromStorage();
 
   setupRealtimeSync();
 
-  setupEventListeners();
+  setupEventListeners(); // 🌟 This function now runs your clean login code automatically!
 
-  document.getElementById('authForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
+  // The rest of your startup code can stay below this line...
+});
 
-    const email = document.getElementById('emailInput').value.trim();
-    const password = document.getElementById('passwordInput').value;
-    const errorElement = document.getElementById('authError');
-    const loginButton = document.getElementById('btnLogin');
-
-    errorElement.textContent = '';
-    loginButton.disabled = true;
-    loginButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
-
-    const success = await loginStaff(email, password);
-
-    //  TO THIS:
-    if (success) {
-      hideAuthOverlay(); // Removes the screen shield
-      
-      // 🔽 ADD THESE TWO LINES HERE:
-      await loadDataFromStorage(); // Fetches your data from Supabase
-      renderApp();                 // Draws your classes, students, and unlocks the UI
-      
-    } else {
-    
-      errorElement.textContent = 'Invalid email or password.';
-      loginButton.disabled = false;
-      loginButton.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Log In';
-    }
-  });
 
   // the rest of your startup code...
-});
 
 /* ==========================================================================
    DATA PERSISTENCE & INITIAL SAMPLE DATA
