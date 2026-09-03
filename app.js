@@ -11,7 +11,6 @@ const supabase = window.supabase.createClient(
  */
 
 // Global State
-const DEFAULT_PASSCODE = '8478';
 const DEFAULT_CENTER_NAME = 'Apex Teaching Center';
 
 let appState = {
@@ -272,13 +271,33 @@ async function loginStaff(email, password) {
   return true;
 }
 
+document.getElementById('authForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  const email = document.getElementById('emailInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const errorElement = document.getElementById('authError');
+  const loginButton = document.getElementById('btnLogin');
+
+  errorElement.textContent = '';
+  loginButton.disabled = true;
+  loginButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+
+  const success = await loginStaff(email, password);
+
+  if (success) {
+    document.getElementById('authOverlay').style.display = 'none';
+  } else {
+    errorElement.textContent = 'Invalid email or password.';
+    loginButton.disabled = false;
+    loginButton.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Log In';
+  }
+});
+
 function handlePasscodeVal(val) {
   window.numpadPress(val);
 }
 
-function verifyPasscode() {
-  window.submitPasscodeUnlock();
-}
 
 function updatePasscodeDots() {
   // Maintained for compatibility

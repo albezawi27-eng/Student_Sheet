@@ -15,51 +15,60 @@
 <body>
 
   <!-- ==========================================================================
-       PASSCODE LOCK SCREEN OVERLAY
        ========================================================================== -->
-  <div id="authOverlay" class="auth-overlay" style="z-index: 99999;">
-    <div class="auth-card" id="authCard">
-      <div class="auth-icon-badge">
-        <i class="fa-solid fa-user-shield"></i>
-      </div>
-      <h2 class="auth-title">Teaching Center</h2>
-      <p class="auth-subtitle">Teacher & Assistant Security Gate</p>
+  <!-- SUPABASE LOGIN SCREEN -->
+<div id="authOverlay" class="auth-overlay" style="z-index: 99999;">
+  <div class="auth-card" id="authCard">
 
-      <form id="authForm" onsubmit="submitPasscodeUnlock(); return false;">
-        <div style="position: relative; max-width: 260px; margin: 0 auto 20px;">
-          <input type="password" id="passcodeInputField" maxlength="8" 
-                 placeholder="Enter Passcode (8478)" class="form-control" 
-                 style="font-size: 24px; letter-spacing: 4px; text-align: center; font-weight: 800; padding: 12px 45px 12px 16px; background: var(--bg-input); border: 2px solid var(--primary);" 
-                 autocomplete="off" autofocus required>
-          <button type="button" id="btnTogglePassVisibility" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 16px;" title="Show / Hide Password">
-            <i class="fa-solid fa-eye" id="eyeIcon"></i>
-          </button>
-        </div>
-
-        <div class="numpad">
-          <button type="button" class="num-btn" onclick="numpadPress('1')">1</button>
-          <button type="button" class="num-btn" onclick="numpadPress('2')">2</button>
-          <button type="button" class="num-btn" onclick="numpadPress('3')">3</button>
-          <button type="button" class="num-btn" onclick="numpadPress('4')">4</button>
-          <button type="button" class="num-btn" onclick="numpadPress('5')">5</button>
-          <button type="button" class="num-btn" onclick="numpadPress('6')">6</button>
-          <button type="button" class="num-btn" onclick="numpadPress('7')">7</button>
-          <button type="button" class="num-btn" onclick="numpadPress('8')">8</button>
-          <button type="button" class="num-btn" onclick="numpadPress('9')">9</button>
-          <button type="button" class="num-btn" onclick="numpadPress('clear')" title="Clear"><i class="fa-solid fa-rotate-left"></i></button>
-          <button type="button" class="num-btn" onclick="numpadPress('0')">0</button>
-          <button type="button" class="num-btn" onclick="numpadPress('backspace')" title="Delete"><i class="fa-solid fa-delete-left"></i></button>
-        </div>
-
-        <button type="button" id="btnUnlockSubmit" onclick="submitPasscodeUnlock()" class="btn btn-primary" style="width: 100%; margin-top: 20px; padding: 14px; font-size: 16px; font-weight: 700;">
-          <i class="fa-solid fa-key"></i> Unlock Dashboard
-        </button>
-      </form>
-
-      <div class="auth-error" id="authError"></div>
+    <div class="auth-icon-badge">
+      <i class="fa-solid fa-user-shield"></i>
     </div>
-  </div>
 
+    <h2 class="auth-title">Teaching Center</h2>
+    <p class="auth-subtitle">Teacher & Assistant Login</p>
+
+    <form id="authForm">
+      
+      <div style="margin-bottom: 15px;">
+        <input
+          type="email"
+          id="emailInput"
+          placeholder="Email"
+          class="form-control"
+          autocomplete="email"
+          required
+          style="font-size: 18px; padding: 12px 16px;"
+        >
+      </div>
+
+      <div style="margin-bottom: 15px;">
+        <input
+          type="password"
+          id="passwordInput"
+          placeholder="Password"
+          class="form-control"
+          autocomplete="current-password"
+          required
+          style="font-size: 18px; padding: 12px 16px;"
+        >
+      </div>
+
+      <button
+        type="submit"
+        id="btnLogin"
+        class="btn btn-primary"
+        style="width: 100%; padding: 14px; font-size: 16px; font-weight: 700;"
+      >
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Log In
+      </button>
+
+    </form>
+
+    <div class="auth-error" id="authError"></div>
+
+  </div>
+</div>
   <!-- ==========================================================================
        HEADER & NAVIGATION BAR
        ========================================================================== -->
