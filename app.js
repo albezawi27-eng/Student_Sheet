@@ -121,26 +121,34 @@ async function loadDataFromStorage() {
       .from('app_state')
       .select('data')
       .eq('id', 1)
-      .single();
+      .maybeSingle(); // 🌟 Changed from .single() to .maybeSingle() so it won't crash if empty!
 
     if (error) {
       console.error('Failed to load app state:', error);
       return;
     }
 
+    // If data exists, load it. If NOT, initialize a clean empty structure!
     if (data && data.data) {
       appState = {
         ...appState,
         ...data.data
       };
+    } else {
+      console.log('No database records found. Initializing a clean workspace.');
+      appState.classes = appState.classes || [];
+      appState.lessons = appState.lessons || [];
+      appState.students = appState.students || [];
+      appState.evaluations = appState.evaluations || {};
     }
 
-    console.log('App state loaded from Supabase');
+    console.log('App state processed successfully');
 
   } catch (error) {
     console.error('Supabase load error:', error);
   }
 }
+
 
 async function saveDataToStorage() {
   try {
