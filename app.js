@@ -1,3 +1,10 @@
+const SUPABASE_URL = 'https://zvqxydftgxoeagmxqupx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mxUxGtfnAAlsN1KR_45j-Q_kAWtDrIo';
+
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
 /**
  * Teaching Center - Student Evaluation & Lesson Report Web App
  * JavaScript Engine
@@ -36,8 +43,11 @@ const CRITERIA_KEYS = [
 let currentEnteredPasscode = '';
 
 // Initialize App on DOM Content Loaded
-document.addEventListener('DOMContentLoaded', () => {
-  loadDataFromStorage();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadDataFromStorage();
+
+  setupRealtimeSync();
+
   setupEventListeners();
   setupNumpad();
   
@@ -55,42 +65,93 @@ document.addEventListener('DOMContentLoaded', () => {
 /* ==========================================================================
    DATA PERSISTENCE & INITIAL SAMPLE DATA
    ========================================================================== */
-function loadDataFromStorage() {
-  const storedState = localStorage.getItem('teachingCenterState');
-  if (storedState) {
-    try {
-      const parsed = JSON.parse(storedState);
-      appState = { ...appState, ...parsed };
-      if (!appState.passcode || appState.passcode === '1234') {
-        appState.passcode = DEFAULT_PASSCODE;
-      }
-    } catch (e) {
-      console.error('Failed to parse saved state', e);
-      loadSampleData();
-    }
-  } else {
-    loadSampleData();
-  }
+function setupRealtimeSync() {
+  supabase
+    .channel('app-state-sync')
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'app_state',
+        filter: 'id=eq.1'
+      },
+      (payload) => {
+        console.log('Realtime update received:', payload);
 
-  // Fallbacks to ensure app never crashes
-  if (!appState.classes || appState.classes.length === 0) {
-    loadSampleData();
-  }
-  if (!appState.currentClassId || !appState.classes.find(c => c.id === appState.currentClassId)) {
-    if (appState.classes && appState.classes.length > 0) {
-      appState.currentClassId = appState.classes[0].id;
+        const remoteState = payload.new.data;
+
+        if (!remoteState) return;
+
+        appState = {
+          ...appState,
+          ...remoteState
+        };
+
+        renderApp();
+      }
+    )
+    .subscribe((status) => {
+      console.log('Realtime status:', status);
+    });
+}
+
+async function loadDataFromStorage() {
+  try {
+    const { data, error } = await supabase
+      .from('app_state')
+      .select('data')
+      .eq('id', 1)
+      .single();
+
+    if (error) {
+      console.error('Failed to load app state:', error);
+      return;
     }
-  }
-  if (!appState.currentLessonId || !appState.lessons.find(l => l.id === appState.currentLessonId)) {
-    const classLessons = appState.lessons ? appState.lessons.filter(l => l.classId === appState.currentClassId) : [];
-    if (classLessons.length > 0) {
-      appState.currentLessonId = classLessons[0].id;
+
+    if (data && data.data) {
+      appState = {
+        ...appState,
+        ...data.data
+      };
     }
+
+    console.log('App state loaded from Supabase');
+
+  } catch (error) {
+    console.error('Supabase load error:', error);
   }
 }
 
-function saveDataToStorage() {
-  localStorage.setItem('teachingCenterState', JSON.stringify(appState));
+async function saveDataToStorage() {
+  try {
+    const sharedState = {
+      ...appState
+    };
+
+    const { error } = await supabase
+      .from('app_state')
+      .upsert(
+        {
+          id: 1,
+          data: sharedState,
+          updated_at: new Date().toISOString()
+        },
+        {
+          onConflict: 'id'
+        }
+      );
+
+    if (error) {
+      console.error('Failed to save app state:', error);
+      return;
+    }
+
+    console.log('App state saved to Supabase');
+
+  } catch (error) {
+    console.error('Supabase save error:', error);
+  }
 }
 
 function loadSampleData() {
