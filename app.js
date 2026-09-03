@@ -48,6 +48,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupRealtimeSync();
 
   setupEventListeners();
+
+  document.getElementById('authForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+    const errorElement = document.getElementById('authError');
+    const loginButton = document.getElementById('btnLogin');
+
+    errorElement.textContent = '';
+    loginButton.disabled = true;
+    loginButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+
+    const success = await loginStaff(email, password);
+
+    if (success) {
+      document.getElementById('authOverlay').style.display = 'none';
+    } else {
+      errorElement.textContent = 'Invalid email or password.';
+      loginButton.disabled = false;
+      loginButton.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Log In';
+    }
+  });
+
+  // the rest of your startup code...
 });
 
 /* ==========================================================================
