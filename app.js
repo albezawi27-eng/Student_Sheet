@@ -189,72 +189,7 @@ function loadSampleData() {
 /* ==========================================================================
    AUTHENTICATION & LOCK SCREEN
    ========================================================================== */
-window.numpadPress = function(val) {
-  const passInput = document.getElementById('passcodeInputField');
-  const authError = document.getElementById('authError');
-  if (authError) authError.textContent = '';
-  if (!passInput) return;
 
-  if (val === 'clear') {
-    passInput.value = '';
-  } else if (val === 'backspace') {
-    passInput.value = passInput.value.slice(0, -1);
-  } else if (passInput.value.length < 8) {
-    passInput.value += val;
-  }
-
-  if (passInput.value.length === 4) {
-    window.submitPasscodeUnlock();
-  }
-};
-
-window.togglePasswordVisibility = function() {
-  const passInput = document.getElementById('passcodeInputField');
-  const eyeIcon = document.getElementById('eyeIcon');
-  if (!passInput) return;
-
-  if (passInput.type === 'password') {
-    passInput.type = 'text';
-    if (eyeIcon) {
-      eyeIcon.className = 'fa-solid fa-eye-slash';
-    }
-  } else {
-    passInput.type = 'password';
-    if (eyeIcon) {
-      eyeIcon.className = 'fa-solid fa-eye';
-    }
-  }
-};
-
-window.submitPasscodeUnlock = function() {
-  const passInput = document.getElementById('passcodeInputField');
-  const authError = document.getElementById('authError');
-  const entered = passInput ? passInput.value.trim() : '';
-
-  const activePasscode = String(appState.passcode || DEFAULT_PASSCODE).trim();
-
-  if (entered === activePasscode || entered === '8478' || entered === '1234' || entered.length > 0) {
-    appState.isUnlocked = true;
-    appState.passcode = '8478';
-    saveDataToStorage();
-
-    const overlay = document.getElementById('authOverlay');
-    if (overlay) {
-      overlay.style.display = 'none';
-      overlay.style.opacity = '0';
-      overlay.style.pointerEvents = 'none';
-    }
-
-    renderApp();
-  } else {
-    const authCard = document.getElementById('authCard');
-    if (authCard) {
-      authCard.classList.add('shake');
-      setTimeout(() => authCard.classList.remove('shake'), 400);
-    }
-    if (authError) authError.textContent = 'Please enter passcode 8478 to unlock.';
-  }
-};
 
 async function loginStaff(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({
