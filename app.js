@@ -4,7 +4,7 @@
    window.DEFAULT_PASSCODE = '1234'; 
    window.DEFAULT_CENTER_NAME = 'My Community Center';
    
-   const SUPABASE_URL = 'https://supabase.co';
+   const SUPABASE_URL = 'https://zvqxydftgxoeagmxqupx.supabase.co';
    const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mxUxGtfnAAlsN1KR_45j-Q_kAWtDrIo';
    
    if (!window.supabaseClientInstance) {
