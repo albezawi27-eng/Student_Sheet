@@ -60,10 +60,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const success = await loginStaff(email, password);
 
     //  TO THIS:
-if (success) {
-  hideAuthOverlay(); // This removes the display, opacity, AND the click-blocking shield!
-}
- else {
+    if (success) {
+      hideAuthOverlay(); // Removes the screen shield
+      
+      // 🔽 ADD THESE TWO LINES HERE:
+      await loadDataFromStorage(); // Fetches your data from Supabase
+      renderApp();                 // Draws your classes, students, and unlocks the UI
+      
+    } else {
+    
       errorElement.textContent = 'Invalid email or password.';
       loginButton.disabled = false;
       loginButton.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Log In';
@@ -1048,16 +1053,15 @@ function deleteClass(classId) {
 function populateStudentClassSelect() {
   const select = document.getElementById('studentClassSelect');
   if (!select) return;
+  
+  // 🔽 ADD THIS SAFETY CHECK:
+  if (!appState.classes || appState.classes.length === 0) {
+    alert("Please create or load a class first before adding students!");
+    return;
+  }
+
   select.innerHTML = '';
 
-  appState.classes.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.id;
-    opt.textContent = c.name;
-    if (c.id === appState.currentClassId) opt.selected = true;
-    select.appendChild(opt);
-  });
-}
 
 /* ==========================================================================
    FORM HANDLERS
@@ -1553,4 +1557,5 @@ function downloadGlobalClassPDF() {
   } else {
     window.print();
   }
+}
 }
