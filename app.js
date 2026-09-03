@@ -285,53 +285,119 @@
     const currentClass = appState.classes.find(c => c.id === appState.currentClassId);
     const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
     if (!student || !currentLesson) return;
-    const evalData = appState.evaluations[appState.currentLessonId + '_' + student.id] || { dictationMark: 0, criteria: {}, notes: '' };
-    const reportContainer = document.getElementById('reportCardContent'); if (!reportContainer) return;
+  
+    const evalKey = appState.currentLessonId + '_' + student.id;
+    const evalData = appState.evaluations[evalKey] || { dictationMark: 0, criteria: {}, notes: '' };
+    const reportContainer = document.getElementById('reportCardContent'); 
+    if (!reportContainer) return;
+  
     const gradeObj = calculateGrade(evalData.dictationMark);
-    let feedback = evalData.notes || 'Continuous practice will help achieve perfection.';
+    const feedback = evalData.notes || 'No special feedback notes registered for this session.';
+    
+    // Dynamically compile a status layout list for all 7 metrics
     let skillsHTML = '';
     CRITERIA_KEYS.forEach(c => {
       const isPassed = evalData.criteria && evalData.criteria[c.id];
-      skillsHTML += '<div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 10px; margin-bottom: 5px; border-radius: 6px;"><span>' + c.label + '</span><span>' + (isPassed ? '✔' : '✖') + '</span></div>';
+      const statusText = isPassed ? '✓ Achieved' : '❌ Pending';
+      const statusColor = isPassed ? 'green' : '#94a3b8';
+      skillsHTML += '<div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; margin-bottom: 5px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">' +
+          '<span style="font-weight: 600;"><i class="fa-solid ' + c.icon + '" style="margin-right: 8px; color: #3b82f6;"></i>' + c.label + '</span>' +
+          '<span style="font-weight: bold; color: ' + statusColor + ';">' + statusText + '</span>' +
+        '</div>';
     });
-    reportContainer.innerHTML = '<div style="background: #ffffff; padding: 20px; font-family: sans-serif; border-radius: 8px;">' +
-        '<h3>' + escapeHtml(appState.centerName) + ' Report</h3>' +
-        '<div><strong>Student:</strong> ' + escapeHtml(student.name) + ' | <strong>Class:</strong> ' + escapeHtml(currentClass ? currentClass.name : '') + '</div>' +
-        '<div style="margin: 10px 0; font-weight: bold; color: green;">Score: ' + evalData.dictationMark + ' / ' + appState.maxDictationScore + ' (' + gradeObj.label + ')</div>' +
-        '<div>' + skillsHTML + '</div><p style="margin-top: 10px; font-style: italic;">' + escapeHtml(feedback) + '</p>' +
+  
+    reportContainer.innerHTML = '<div style="background: #ffffff; padding: 24px; font-family: Arial, sans-serif; border-radius: 12px; border: 1px solid #cbd5e1; color: #1e293b;">' +
+        '<h3 style="text-align: center; margin-top: 0; color: #0f172a; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">' + escapeHtml(appState.centerName) + ' Evaluation Report</h3>' +
+        '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; font-size: 13px; color: #475569;">' +
+          '<div><strong>Student:</strong> ' + escapeHtml(student.name) + '</div>' +
+          '<div><strong>Class Frame:</strong> ' + escapeHtml(currentClass ? currentClass.name : 'General') + '</div>' +
+          '<div><strong>Lesson Topic:</strong> ' + escapeHtml(currentLesson.title) + '</div>' +
+          '<div><strong>Session Date:</strong> ' + currentLesson.date + '</div>' +
+        '</div>' +
+        '<div style="margin: 15px 0; background: #ecfdf5; border: 1px solid #10b981; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">' +
+          '<div><span style="font-size: 11px; color: #047857; font-weight: bold; display: block;">DICTATION SCORE</span>' +
+          '<strong style="font-size: 24px; color: #059669;">' + evalData.dictationMark + ' / ' + appState.maxDictationScore + '</strong></div>' +
+          '<div style="background: #10b981; color: #ffffff; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 13px;">' + gradeObj.label + '</div>' +
+        '</div>' +
+        '<h4 style="margin-bottom: 10px; color: #0f172a; font-size: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">Session Skill Metrics Matrix</h4>' +
+        '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px;">' + skillsHTML + '</div>' +
+        '<h4 style="margin-bottom: 6px; color: #0f172a; font-size: 14px;">Teacher Evaluation Logs & Comments</h4>' +
+        '<div style="background: #f1f5f9; padding: 12px; border-left: 4px solid #3b82f6; border-radius: 4px; font-style: italic; font-size: 13px; line-height: 1.5; color: #334155;">"' + escapeHtml(feedback) + '"</div>' +
       '</div>';
-    document.getElementById('btnCopyReportText').dataset.shareText = "Report: " + student.name + " - Score: " + evalData.dictationMark;
+  
+    const shareText = "🎓 Report Card: " + student.name + " \n✍️ Dictation: " + evalData.dictationMark + "/" + appState.maxDictationScore + " (" + gradeObj.label + ")\n📝 Notes: " + teacherComment;
+    document.getElementById('btnCopyReportText').dataset.shareText = shareText; 
     openModal('reportModal');
   }
+  
   function openGlobalReportModal() {
     const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId);
     const currentClass = appState.classes.find(c => c.id === appState.currentClassId);
     const currentLesson = appState.lessons.find(l => l.id === appState.currentLessonId);
-    if (currentStudents.length === 0) { alert('No records found for this class table.'); return; }
+    if (currentStudents.length === 0) { alert('No student profile entries found for this class.'); return; }
+    
     let rows = '';
     currentStudents.forEach((student, idx) => {
-      const ev = appState.evaluations[appState.currentLessonId + '_' + student.id] || { dictationMark: 0, criteria: {}, notes: '' };
-      const gradeObj = calculateGrade(ev.dictationMark); const cr = ev.criteria || {};
-      rows += '<tr>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center;">' + (idx + 1) + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; padding: 5px;">' + escapeHtml(student.name) + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center;">' + (ev.dictationMark || 0) + '/' + appState.maxDictationScore + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center; color: green;">' + (cr.attendance ? '✓' : '') + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center; color: green;">' + (cr.hw ? '✓' : '') + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center; color: green;">' + (cr.listening ? '✓' : '') + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center; color: green;">' + (cr.reading ? '✓' : '') + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center; color: green;">' + (cr.speaking ? '✓' : '') + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center; color: green;">' + (cr.writing ? '✓' : '') + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center; color: green;">' + (cr.video ? '✓' : '') + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; text-align: center;">' + gradeObj.label + '</td>' +
-        '<td style="border: 1px solid #bfc5cc; padding: 5px;">' + escapeHtml(ev.notes || '') + '</td>' +
+      const evalKey = appState.currentLessonId + '_' + student.id; 
+      const ev = appState.evaluations[evalKey] || { dictationMark: 0, criteria: {}, notes: '' };
+      const gradeObj = calculateGrade(ev.dictationMark); 
+      const cr = ev.criteria || {};
+  
+      rows += '<tr style="background: ' + (idx % 2 === 0 ? '#ffffff' : '#f8fafc') + ';">' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; padding: 8px; font-weight: bold; color: #64748b;">' + (idx + 1) + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; padding: 8px; font-weight: 600; color: #0f172a;">' + escapeHtml(student.name) + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; padding: 8px; font-weight: bold; color: #059669;">' + (ev.dictationMark || 0) + '/' + appState.maxDictationScore + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 14px; font-weight: bold; color: #10b981;">' + (cr.attendance ? '✓' : '—') + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 14px; font-weight: bold; color: #10b981;">' + (cr.hw ? '✓' : '—') + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 14px; font-weight: bold; color: #3b82f6;">' + (cr.listening ? '✓' : '—') + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 14px; font-weight: bold; color: #3b82f6;">' + (cr.reading ? '✓' : '—') + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 14px; font-weight: bold; color: #3b82f6;">' + (cr.speaking ? '✓' : '—') + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 14px; font-weight: bold; color: #3b82f6;">' + (cr.writing ? '✓' : '—') + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 14px; font-weight: bold; color: #3b82f6;">' + (cr.video ? '✓' : '—') + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; padding: 8px;"><span class="badge-grade ' + gradeObj.cssClass + '" style="font-size: 11px; font-weight: bold;">' + gradeObj.label + '</span></td>' +
+        '<td style="border: 1px solid #cbd5e1; padding: 8px; font-size: 12px; color: #334155; font-style: italic;">' + escapeHtml(ev.notes || '—') + '</td>' +
       '</tr>';
     });
-    const element = document.getElementById('globalReportCardContent'); if (!element) return;
-    element.innerHTML = '<div style="background: #ffffff; padding: 20px; font-family: sans-serif;"><h3 style="text-align: center; text-transform: uppercase;">' + escapeHtml(appState.centerName) + ' Dashboard Excel-View Summary</h3><h4 style="text-align: center; color: #4b5563;">Class Framework: ' + escapeHtml(currentClass ? currentClass.name : '') + ' (' + (currentLesson ? currentLesson.date : '') + ')</h4><table style="width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #9ca3af; margin-top: 15px;"><thead><tr style="background: #f3f4f6; color: #1f2937;"><th>#</th><th>Student Name</th><th>Dictation</th><th>Att</th><th>HW</th><th>List</th><th>Read</th><th>Speak</th><th>Write</th><th>Vid</th><th>Grade Status</th><th>Evaluation Notes</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
-    element.dataset.className = currentClass ? currentClass.name : 'Class'; element.dataset.lessonTitle = currentLesson ? currentLesson.title : 'Lesson';
+  
+    const element = document.getElementById('globalReportCardContent'); 
+    if (!element) return;
+    
+    element.innerHTML = '<div style="background: #ffffff; padding: 24px; font-family: Arial, sans-serif; color: #0f172a;">' +
+        '<div style="text-align: center; padding-bottom: 16px; border-bottom: 2px solid #0f172a; margin-bottom: 16px;">' +
+          '<div style="font-size: 24px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase;">' + escapeHtml(appState.centerName) + '</div>' +
+          '<div style="font-size: 11px; color: #64748b; font-weight: bold; letter-spacing: 1px; margin-top: 4px; text-transform: uppercase;">Master Spreadsheet Lesson Summary Log</div>' +
+        '</div>' +
+        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 13px; background: #f1f5f9; padding: 10px 15px; border-radius: 6px;">' +
+          '<div><strong>Classroom Group:</strong> ' + escapeHtml(currentClass ? currentClass.name : 'General') + '</div>' +
+          '<div><strong>Active Topic:</strong> ' + escapeHtml(currentLesson ? currentLesson.title : 'Initial Evaluation') + '</div>' +
+          '<div><strong>Session Date:</strong> ' + (currentLesson ? currentLesson.date : '') + '</div>' +
+        '</div>' +
+        '<table style="width: 100%; border-collapse: collapse; font-size: 11px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">' +
+          '<thead>' +
+            '<tr style="background: #0f172a; color: #ffffff; font-weight: bold; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 35px;">#</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 8px; text-align: left; width: 180px;">Student Profile Registry Name</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 75px;">Dictation</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 45px;">Att</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 45px;">HW</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 45px;">List</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 45px;">Read</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 45px;">Speak</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 45px;">Write</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 4px; width: 45px;">Vid</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 6px; width: 130px;">Grade Performance Status</th>' +
+              '<th style="border: 1px solid #475569; padding: 10px 8px; text-align: left;">Teacher Session Evaluation Notes</th>' +
+            '</tr>' +
+          '</thead>' +
+          '<tbody>' + tableRowsHTML + '</tbody>' +
+        '</table>' +
+      '</div>';
+  
+    element.dataset.className = currentClass ? currentClass.name : 'Class';
+    element.dataset.lessonTitle = currentLesson ? currentLesson.title : 'Lesson';
     openModal('globalReportModal');
   }
+  
   
   function downloadGlobalClassPDF() {
     const element = document.getElementById('globalReportCardContent'); if (!element) return;
