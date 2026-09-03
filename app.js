@@ -1,17 +1,20 @@
+// 1. Assign configuration globally to window to avoid declaration errors
 window.DEFAULT_PASSCODE = '1234'; 
 window.DEFAULT_CENTER_NAME = 'My Community Center';
 
 const SUPABASE_URL = 'https://supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mxUxGtfnAAlsN1KR_45j-Q_kAWtDrIo-Q_kAWtDrIo-Q_kAWtDrIo';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_mxUxGtfnAAlsN1KR_45j-Q_kAWtDrIo';
 
-// 2. Name this variable EXACTLY 'supabase' so all your app's functions can find it
-window.supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
+// 2. Initialize the client safely without using 'const supabase' again at the top level
+if (!window.supabaseClientInstance) {
+  window.supabaseClientInstance = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+}
 
-// 3. Make a local shortcut variable so your functions don't break
-const supabase = window.supabase;
+// 3. Point your local variable name to the instance so your other functions work
+var supabase = window.supabaseClientInstance;
 
 let appState = {
   isUnlocked: false,
