@@ -710,56 +710,34 @@ if (reportButton) {
     saveDataToStorage(); closeModal('settingsModal'); renderApp();
   }
   
-  function deleteStudent(studentId) { if (confirm('Remove profile?')) { appState.students = appState.students.filter(s => s.id !== studentId); saveDataToStorage(); renderTable(); updateStatsSummary(); } }
-  function setupEventListeners() {
-    const authForm = document.getElementById('authForm'); if (authForm) { authForm.addEventListener('submit', async (e) => { e.preventDefault(); const success = await loginStaff(document.getElementById('emailInput').value.trim(), document.getElementById('passwordInput').value); if (success) { hideAuthOverlay(); await loadDataFromStorage(); renderApp(); } else { alert('Invalid credentials'); } }); }
-    const btnSettings = document.getElementById('btnSettings'); if (btnSettings) { btnSettings.addEventListener('click', () => { document.getElementById('settingCenterName').value = appState.centerName || ''; openModal('settingsModal'); }); }
-    const btnManageClasses = document.getElementById('btnManageClasses'); if (btnManageClasses) { btnManageClasses.addEventListener('click', () => { renderClassList(); openModal('manageClassesModal'); }); }
-    const btnAddStudent = document.getElementById('btnAddStudent'); if (btnAddStudent) { btnAddStudent.addEventListener('click', () => { populateStudentClassSelect(); openModal('addStudentModal'); }); }
-    const btnNewLesson = document.getElementById('btnNewLesson'); if (btnNewLesson) { btnNewLesson.addEventListener('click', () => { document.getElementById('newLessonDate').value = new Date().toISOString().split('T'); openModal('addLessonModal'); }); }
-    document.getElementById('classSelect').addEventListener('change', (e) => { appState.currentClassId = e.target.value; const cl = appState.lessons.filter(l => l.classId === appState.currentClassId); if (cl.length > 0) appState.currentLessonId = cl[0].id; saveDataToStorage(); renderApp(); });
-    document.getElementById('lessonSelect').addEventListener('change', (e) => { appState.currentLessonId = e.target.value; saveDataToStorage(); renderApp(); });
-    document.getElementById('searchInput').addEventListener('input', renderTable);
-    if (document.getElementById('addClassForm')) document.getElementById('addClassForm').addEventListener('submit', handleAddClass);
-    if (document.getElementById('addStudentForm')) document.getElementById('addStudentForm').addEventListener('submit', handleAddStudent);
-    if (document.getElementById('addLessonForm')) document.getElementById('addLessonForm').addEventListener('submit', handleAddLesson);
-    if (document.getElementById('settingsForm')) document.getElementById('settingsForm').addEventListener('submit', handleSaveSettings);
-    document.getElementById('btnThemeToggle').addEventListener('click', () => { appState.theme = appState.theme === 'dark' ? 'light' : 'dark'; saveDataToStorage(); renderApp(); });
-    document.getElementById('btnLock').addEventListener('click', () => { appState.isUnlocked = false; showAuthOverlay(); });
-  
-    const exitTriggers = [
-      { btnId: 'btnCloseSettingsModal', modalId: 'settingsModal' }, { btnId: 'btnCancelSettings', modalId: 'settingsModal' },
-      { btnId: 'btnCloseManageClassesModal', modalId: 'manageClassesModal' }, { btnId: 'btnCloseClassesFooter', modalId: 'manageClassesModal' },
-      { btnId: 'btnCloseAddStudentModal', modalId: 'addStudentModal' }, { btnId: 'btnCancelAddStudent', modalId: 'addStudentModal' },
-      { btnId: 'btnCloseAddLessonModal', modalId: 'addLessonModal' }, { btnId: 'btnCancelAddLesson', modalId: 'addLessonModal' },
-      { btnId: 'btnCloseReportModal', modalId: 'reportModal' }, { btnId: 'btnCloseGlobalReportModal', modalId: 'globalReportModal' },
-      { btnId: 'btnCloseAnalyticsModal', modalId: 'analyticsModal' }
-    ];
-    exitTriggers.forEach(t => { const el = document.getElementById(t.btnId); if (el) { el.addEventListener('click', (e) => { e.stopPropagation(); closeModal(t.modalId); }); } });
-  
-    document.getElementById('btnResetSampleData').addEventListener('click', () => { if (confirm('Load mockup profiles?')) { loadSampleData(); closeModal('settingsModal'); renderApp(); } });
-    document.getElementById('btnClearAllData').addEventListener('click', () => { if (confirm('Clear workspace?')) { appState.students = []; appState.classes = []; appState.lessons = []; appState.evaluations = {}; saveDataToStorage(); closeModal('settingsModal'); renderApp(); } });
-    document.getElementById('btnExportCSV').addEventListener('click', exportToCSV);
-    if (document.getElementById('btnDownloadClassPDF')) document.getElementById('btnDownloadClassPDF').addEventListener('click', openGlobalReportModal);
-    if (document.getElementById('btnAnalytics')) document.getElementById('btnAnalytics').addEventListener('click', openAnalyticsModal);
-    const btnDownloadGlobalPDF = document.getElementById('btnDownloadGlobalPDF'); if (btnDownloadGlobalPDF) { btnDownloadGlobalPDF.addEventListener('click', downloadGlobalClassPDF); }
+  function deleteStudent(studentId) {
+    if (confirm('Remove profile?')) {
+      appState.students = appState.students.filter(s => s.id !== studentId);
+      saveDataToStorage();
+      renderTable();
+      updateStatsSummary();
+    }
   }
   
-  function openModal(id) { const el = document.getElementById(id); if (el) el.classList.add('active'); }
-  function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('active'); }
-  function escapeHtml(str) { return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+  }
+  
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  }
+  
+  function escapeHtml(str) {
+    return (str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+  
   window.openReportModal = openReportModal;
-window.openGlobalReportModal = openGlobalReportModal;
-window.openAnalyticsModal = openAnalyticsModal;
-window.openModal = openModal;
-window.closeModal = closeModal;}
-function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+  window.openGlobalReportModal = openGlobalReportModal;
+  window.openAnalyticsModal = openAnalyticsModal;
+  window.openModal = openModal;
+  window.closeModal = closeModal;}
