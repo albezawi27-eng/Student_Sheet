@@ -334,9 +334,18 @@ if (reportButton) {
         '<div style="background: #f1f5f9; padding: 14px; border-left: 4px solid #2563eb; border-radius: 4px; font-style: italic; font-size: 13px; color: #334155; line-height: 1.6;">"' + escapeHtml(feedback) + '"</div>' +
       '</div>';
   
-    document.getElementById('btnCopyReportText').dataset.shareText = "🎓 Report Card: " + student.name + " \n✍️ Dictation Score: " + evalData.dictationMark + "/" + appState.maxDictationScore + " (" + gradeObj.label + ")"; 
-    openModal('reportModal');
-  }
+      const copyReportButton = document.getElementById('btnCopyReportText');
+
+      if (copyReportButton) {
+        copyReportButton.dataset.shareText =
+          "🎓 Report Card: " + student.name +
+          " \n✍️ Dictation Score: " +
+          evalData.dictationMark + "/" +
+          appState.maxDictationScore +
+          " (" + gradeObj.label + ")";
+      }
+      
+      openModal('reportModal');
   
   
   function openGlobalReportModal() {
@@ -436,14 +445,14 @@ if (reportButton) {
   function handleAddClass(e) {
     e.preventDefault(); const name = document.getElementById('newClassNameInput').value.trim(); if (!name) return;
     const newClassId = 'cls_' + Date.now(); appState.classes.push({ id: newClassId, name: name, grade: 'General', group: 'General' });
-    const newLessonId = 'les_' + Date.now(); appState.lessons.push({ id: newLessonId, classId: newClassId, title: 'Lesson 1', date: new Date().toISOString().split('T') });
+    const newLessonId = 'les_' + Date.now(); appState.lessons.push({ id: newLessonId, classId: newClassId, title: 'Lesson 1',date: new Date().toISOString().split('T')[0],time: new Date().toISOString().split('T')[1] });
     appState.currentClassId = newClassId; appState.currentLessonId = newLessonId; saveDataToStorage(); closeModal('manageClassesModal'); renderApp();
   }
   
   // Fixed class removal frame rules mapping system safely
   function deleteClass(classId) {
     if (appState.classes.length <= 1) { alert('Cannot remove single remaining class container.'); return; }
-    if (confirm('Delete this class framework log?')) { appState.classes = appState.classes.filter(c => c.id !== classId); appState.students = appState.students.filter(s => s.classId !== classId); appState.lessons = appState.lessons.filter(l => l.classId !== classId); appState.currentClassId = appState.classes.id; const left = appState.lessons.filter(l => l.classId === appState.currentClassId); if (left.length > 0) appState.currentLessonId = left.id; saveDataToStorage(); renderClassList(); renderApp(); }
+    if (confirm('Delete this class framework log?')) { appState.classes = appState.classes.filter(c => c.id !== classId); appState.students = appState.students.filter(s => s.classId !== classId); appState.lessons = appState.lessons.filter(l => l.classId !== classId); appState.currentClassId = appState.classes[0].id; const left = appState.lessons.filter(l => l.classId === appState.currentClassId); if (left.length > 0) appState.currentLessonId = left[0].id; saveDataToStorage(); renderClassList(); renderApp(); }
   }
   
   function populateStudentClassSelect() {
@@ -476,7 +485,7 @@ if (reportButton) {
     const btnManageClasses = document.getElementById('btnManageClasses'); if (btnManageClasses) { btnManageClasses.addEventListener('click', () => { renderClassList(); openModal('manageClassesModal'); }); }
     const btnAddStudent = document.getElementById('btnAddStudent'); if (btnAddStudent) { btnAddStudent.addEventListener('click', () => { populateStudentClassSelect(); openModal('addStudentModal'); }); }
     const btnNewLesson = document.getElementById('btnNewLesson'); if (btnNewLesson) { btnNewLesson.addEventListener('click', () => { document.getElementById('newLessonDate').value = new Date().toISOString().split('T'); openModal('addLessonModal'); }); }
-    document.getElementById('classSelect').addEventListener('change', (e) => { appState.currentClassId = e.target.value; const cl = appState.lessons.filter(l => l.classId === appState.currentClassId); if (cl.length > 0) appState.currentLessonId = cl.id; saveDataToStorage(); renderApp(); });
+    document.getElementById('classSelect').addEventListener('change', (e) => { appState.currentClassId = e.target.value; const cl = appState.lessons.filter(l => l.classId === appState.currentClassId); if (cl.length > 0) appState.currentLessonId = cl[0].id; saveDataToStorage(); renderApp(); });
     document.getElementById('lessonSelect').addEventListener('change', (e) => { appState.currentLessonId = e.target.value; saveDataToStorage(); renderApp(); });
     document.getElementById('searchInput').addEventListener('input', renderTable);
     if (document.getElementById('addClassForm')) document.getElementById('addClassForm').addEventListener('submit', handleAddClass);
@@ -507,4 +516,8 @@ if (reportButton) {
   function openModal(id) { const el = document.getElementById(id); if (el) el.classList.add('active'); }
   function closeModal(id) { const el = document.getElementById(id); if (el) el.classList.remove('active'); }
   function escapeHtml(str) { return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-                   
+  window.openReportModal = openReportModal;
+window.openGlobalReportModal = openGlobalReportModal;
+window.openAnalyticsModal = openAnalyticsModal;
+window.openModal = openModal;
+window.closeModal = closeModal;}
