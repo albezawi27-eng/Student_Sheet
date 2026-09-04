@@ -171,16 +171,22 @@
   function updatePasscodeDots() {}
   
   function showAuthOverlay() {
-    currentEnteredPasscode = '';
-    const passInput = document.getElementById('passcodeInputField');
-    if (passInput) { passInput.value = ''; setTimeout(() => passInput.focus(), 100); }
     const overlay = document.getElementById('authOverlay');
-    if (overlay) { overlay.style.display = 'flex'; overlay.style.opacity = '1'; overlay.style.pointerEvents = 'auto'; }
-  }
   
+    if (overlay) {
+      overlay.style.display = 'none';
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+    }
+  }  
   function hideAuthOverlay() {
     const overlay = document.getElementById('authOverlay');
-    if (overlay) { overlay.style.display = 'none'; overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+  
+    if (overlay) {
+      overlay.style.display = 'none';
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
+    }
   }
   
   function renderApp() {
