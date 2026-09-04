@@ -191,23 +191,28 @@
   function setupEventListeners() {
 
     const authForm = document.getElementById('authForm');
-  
-    if (authForm) {
-      authForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-  
-        const email = document.getElementById('emailInput').value.trim();
-        const password = document.getElementById('passwordInput').value;
-  
-        const success = await loginStaff(email, password);
-  
-        if (success) {
-          document.getElementById('authOverlay').classList.remove('active');
-          appState.isUnlocked = true;
-          renderApp();
-        }
-      });
+
+if (authForm) {
+  authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+
+    console.log('Login button clicked');
+    console.log('Email:', email);
+
+    const success = await loginStaff(email, password);
+
+    if (success) {
+      console.log('Login successful');
+      appState.isUnlocked = true;
+      hideAuthOverlay();
+      await loadDataFromStorage();
+      renderApp();
     }
+  });
+}
   
     const classSelect = document.getElementById('classSelect');
   
