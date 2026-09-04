@@ -48,6 +48,7 @@
     await loadDataFromStorage();
     setupRealtimeSync();
     setupEventListeners();
+    renderApp();
   });
   
   /* ==========================================================================
@@ -186,6 +187,95 @@
     document.getElementById('centerTitleHeading').textContent = appState.centerName;
     document.documentElement.setAttribute('data-theme', appState.theme || 'light');
     renderClassSelector(); renderLessonSelector(); renderTable(); updateStatsSummary();
+  }
+  function setupEventListeners() {
+
+    const authForm = document.getElementById('authForm');
+  
+    if (authForm) {
+      authForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+  
+        const email = document.getElementById('emailInput').value.trim();
+        const password = document.getElementById('passwordInput').value;
+  
+        const success = await loginStaff(email, password);
+  
+        if (success) {
+          document.getElementById('authOverlay').classList.remove('active');
+          appState.isUnlocked = true;
+          renderApp();
+        }
+      });
+    }
+  
+    const classSelect = document.getElementById('classSelect');
+  
+    if (classSelect) {
+      classSelect.addEventListener('change', (e) => {
+        appState.currentClassId = e.target.value;
+  
+        const lessons = appState.lessons.filter(
+          l => l.classId === appState.currentClassId
+        );
+  
+        appState.currentLessonId =
+          lessons.length > 0 ? lessons[0].id : '';
+  
+        saveDataToStorage();
+        renderApp();
+      });
+    }
+  
+    const lessonSelect = document.getElementById('lessonSelect');
+  
+    if (lessonSelect) {
+      lessonSelect.addEventListener('change', (e) => {
+        appState.currentLessonId = e.target.value;
+  
+        saveDataToStorage();
+        renderApp();
+      });
+    }
+  
+    const searchInput = document.getElementById('searchInput');
+  
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        renderTable();
+      });
+    }
+  
+    const themeToggle = document.getElementById('btnThemeToggle');
+  
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+      });
+    }
+  
+    const lockButton = document.getElementById('btnLock');
+  
+    if (lockButton) {
+      lockButton.addEventListener('click', () => {
+        appState.isUnlocked = false;
+  
+        const authOverlay = document.getElementById('authOverlay');
+  
+        if (authOverlay) {
+          authOverlay.classList.add('active');
+        }
+      });
+    }
+  
+    const closeReportButton =
+      document.getElementById('btnCloseReportModal');
+  
+    if (closeReportButton) {
+      closeReportButton.addEventListener('click', () => {
+        closeModal('reportModal');
+      });
+    }
   }
   function renderClassSelector() {
     const select = document.getElementById('classSelect'); if (!select) return;
