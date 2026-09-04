@@ -237,8 +237,18 @@
         '<td>' + criteriaHTML + '</td>' +
         '<td><span class="badge-grade ' + gradeObj.cssClass + '">' + gradeObj.label + '</span></td>' +
         '<td><input type="text" class="notes-input" value="' + escapeHtml(evalData.notes || '') + '" onchange="updateStudentNotes(\'' + student.id + '\', this.value)"></td>' +
-        '<td style="text-align: right;"><button class="btn btn-secondary" onclick="openReportModal(\'' + student.id + '\')">Report</button><button class="btn-icon" style="color: red;" onclick="deleteStudent(\'' + student.id + '\')"><i class="fa-solid fa-trash-can"></i></button></td>';
+        '<td style="text-align: right;">' +
+'<button class="btn btn-secondary student-report-btn" data-student-id="' + student.id + '">Report</button>' +
+'<button class="btn-icon" style="color: red;" onclick="deleteStudent(\'' + student.id + '\')"><i class="fa-solid fa-trash-can"></i></button>' +
+'</td>';
       tbody.appendChild(tr);
+      const reportButton = tr.querySelector('.student-report-btn');
+
+if (reportButton) {
+  reportButton.addEventListener('click', () => {
+    openReportModal(reportButton.dataset.studentId);
+  });
+}
     });
   }
   
@@ -461,7 +471,7 @@
   
   function deleteStudent(studentId) { if (confirm('Remove profile?')) { appState.students = appState.students.filter(s => s.id !== studentId); saveDataToStorage(); renderTable(); updateStatsSummary(); } }
   function setupEventListeners() {
-    const authForm = document.getElementById('authForm'); if (authForm) { authForm.addEventListener('submit', async (e) => { event.preventDefault(); const success = await loginStaff(document.getElementById('emailInput').value.trim(), document.getElementById('passwordInput').value); if (success) { hideAuthOverlay(); await loadDataFromStorage(); renderApp(); } else { alert('Invalid credentials'); } }); }
+    const authForm = document.getElementById('authForm'); if (authForm) { authForm.addEventListener('submit', async (e) => { e.preventDefault(); const success = await loginStaff(document.getElementById('emailInput').value.trim(), document.getElementById('passwordInput').value); if (success) { hideAuthOverlay(); await loadDataFromStorage(); renderApp(); } else { alert('Invalid credentials'); } }); }
     const btnSettings = document.getElementById('btnSettings'); if (btnSettings) { btnSettings.addEventListener('click', () => { document.getElementById('settingCenterName').value = appState.centerName || ''; openModal('settingsModal'); }); }
     const btnManageClasses = document.getElementById('btnManageClasses'); if (btnManageClasses) { btnManageClasses.addEventListener('click', () => { renderClassList(); openModal('manageClassesModal'); }); }
     const btnAddStudent = document.getElementById('btnAddStudent'); if (btnAddStudent) { btnAddStudent.addEventListener('click', () => { populateStudentClassSelect(); openModal('addStudentModal'); }); }
