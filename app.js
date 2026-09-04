@@ -577,9 +577,9 @@ if (reportButton) {
           " (" + gradeObj.label + ")";
       }
       
-      openModal('reportModal');
-  
-  
+          openModal('reportModal');
+  }
+
   function openGlobalReportModal() {
     var currentStudents = appState.students.filter(function(s) { return s.classId === appState.currentClassId; });
     var currentClass = appState.classes.find(function(c) { return c.id === appState.currentClassId; });
@@ -740,4 +740,4 @@ if (reportButton) {
   window.openGlobalReportModal = openGlobalReportModal;
   window.openAnalyticsModal = openAnalyticsModal;
   window.openModal = openModal;
-  window.closeModal = closeModal;}
+  window.closeModal = closeModal;
