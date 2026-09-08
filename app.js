@@ -626,7 +626,7 @@ if (reportButton) {
           '<thead>' +
             '<tr style="background: #0f172a; color: #ffffff; font-weight: bold; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; text-align: center;">' +
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 35px;">#</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 8px; text-align: left; width: 220px;">Student Roster Name</th>' +
+              '<th style="border: 1px solid #334155; padding: 12px 8px; text-align: left; width: 220px;">Student Name</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 95px;">Dictation Mark</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Attendance</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Homework</th>' +
