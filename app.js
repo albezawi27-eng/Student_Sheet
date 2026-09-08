@@ -628,13 +628,12 @@ if (reportButton) {
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 35px;">#</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 8px; text-align: left; width: 220px;">Student Roster Name</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 95px;">Dictation Mark</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Att</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">HW</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">List</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Read</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Speak</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Write</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Vid</th>' +
+              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Attendance</th>' +
+              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Homework</th>' +
+              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Reading</th>' +
+              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Speaking</th>' +
+              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Writing</th>' +
+              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Video</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 6px; width: 140px;">Performance Status</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 8px; text-align: left;">Teacher Evaluation Feedback Notes</th>' +
             '</tr>' +
