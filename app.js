@@ -453,7 +453,9 @@
       const evalKey = appState.currentLessonId + '_' + student.id;
       if (!appState.evaluations[evalKey]) {
         appState.evaluations[evalKey] = {
-          dictationMark: null, criteria: { attendance: true, hw: false, listening: false, reading: false, speaking: false, writing: false, video: false }, notes: '' };
+          dictationMark: null,
+testScore: null,
+criteria: { attendance: true, hw: false, listening: false, reading: false, speaking: false, writing: false, video: false }, notes: '' };
       }
       const evalData = appState.evaluations[evalKey]; const tr = document.createElement('tr');
       const initials = student.name.split(' ').map(n => n).join('').substring(0, 2).toUpperCase(); const gradeObj = calculateGrade(evalData.dictationMark);
@@ -467,20 +469,31 @@
       tr.innerHTML = '<td>' + (idx + 1) + '</td>' +
         '<td><div class="student-profile"><div class="avatar-circle">' + initials + '</div><span>' + escapeHtml(student.name) + '</span></div></td>' +
 '<td><div class="dictation-input-wrap">' +
-  '<input type="number" step="0.5" class="dictation-input" ' +
+  '<input type="number" min="0" step="0.5" class="dictation-input" ' +
   'value="' + (typeof evalData.dictationMark === 'number' ? evalData.dictationMark : '') + '" ' +
   'placeholder="—" ' +
   'onchange="updateDictationMark(\'' + student.id + '\', this.value)">' +
   '<span class="max-score-tag">/' + appState.maxDictationScore + '</span>' +
-  '<button type="button" class="btn btn-secondary" style="margin-left:6px;font-size:11px;padding:4px 7px;" ' +
-  'onclick="setNoDictation(\'' + student.id + '\')">No dictation</button>' +
-'</div></td>' +        '<td>' + criteriaHTML + '</td>' +
-        '<td><span class="badge-grade ' + gradeObj.cssClass + '">' + gradeObj.label + '</span></td>' +
-        '<td><input type="text" class="notes-input" value="' + escapeHtml(evalData.notes || '') + '" onchange="updateStudentNotes(\'' + student.id + '\', this.value)"></td>' +
-        '<td style="text-align: right;">' +
-'<button class="btn btn-secondary student-report-btn" data-student-id="' + student.id + '">Report</button>' +
-'<button class="btn-icon" style="color: red;" onclick="deleteStudent(\'' + student.id + '\')"><i class="fa-solid fa-trash-can"></i></button>' +
-'</td>';
+  '<button type="button" class="btn ' +
+(evalData.dictationMark === 'No dictation' ? 'btn-success' : 'btn-secondary') +
+'" style="margin-left:6px;font-size:11px;padding:4px 7px;" ' +
+'onclick="setNoDictation(\'' + student.id + '\')">No dictation</button>' +
+  '</div></td>' +
+
+  '<td>' +
+  '<input type="number" min="0" step="0.5" class="dictation-input" ' +
+  'value="' + (typeof evalData.testScore === 'number' ? evalData.testScore : '') + '" ' +
+  'placeholder="—" ' +
+  'onchange="updateTestScore(\'' + student.id + '\', this.value)">' +
+  '</td>' +
+
+  '<td>' + criteriaHTML + '</td>' +
+  '<td><span class="badge-grade ' + gradeObj.cssClass + '">' + gradeObj.label + '</span></td>' +
+  '<td><input type="text" class="notes-input" value="' + escapeHtml(evalData.notes || '') + '" onchange="updateStudentNotes(\'' + student.id + '\', this.value)"></td>' +
+  '<td style="text-align: right;">' +
+  '<button class="btn btn-secondary student-report-btn" data-student-id="' + student.id + '">Report</button>' +
+  '<button class="btn-icon" style="color: red;" onclick="deleteStudent(\'' + student.id + '\')"><i class="fa-solid fa-trash-can"></i></button>' +
+  '</td>';
       tbody.appendChild(tr);
       const reportButton = tr.querySelector('.student-report-btn');
 
@@ -542,6 +555,28 @@ if (reportButton) {
     updateStatsSummary();
   }
 
+  function updateTestScore(studentId, val) {
+    const evalKey = appState.currentLessonId + '_' + studentId;
+    if (!appState.evaluations[evalKey]) return;
+  
+    if (val === '') {
+      appState.evaluations[evalKey].testScore = null;
+    } else {
+      let num = parseFloat(val);
+  
+      if (isNaN(num)) {
+        num = null;
+      }
+  
+      if (num !== null && num < 0) {
+        num = 0;
+      }
+  
+      appState.evaluations[evalKey].testScore = num;
+    }
+  
+    saveDataToStorage();
+  }
   function setNoDictation(studentId) {
     const evalKey = appState.currentLessonId + '_' + studentId;
     if (!appState.evaluations[evalKey]) return;
@@ -608,10 +643,9 @@ if (reportButton) {
   
     });
   
-    document.getElementById('statDictationAvg').textContent =
-      dictationCount > 0
-        ? (totalDictation / dictationCount).toFixed(1) + ' / ' + appState.maxDictationScore
-        : '— / ' + appState.maxDictationScore;
+    document.getElementById('statDictationAvg').textContent = dictationCount > 0
+  ? (totalDictation / dictationCount).toFixed(1) + ' / ' + appState.maxDictationScore
+  : '— / ' + appState.maxDictationScore;
   
     document.getElementById('statSkillPassRate').textContent =
       Math.round((totalSkills / totalPossible) * 100) + '%';
@@ -703,6 +737,7 @@ if (reportButton) {
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.speaking ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.writing ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.video ? '✓' : '—') + '</td>' +
+        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.Test ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; padding: 10px;"><span class="badge-grade ' + gradeObj.cssClass + '" style="font-size: 11px; font-weight: bold; text-transform: uppercase;">' + gradeObj.label + '</span></td>' +
         '<td style="border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; color: #475569; font-style: italic; max-width: 200px; word-wrap: break-word;">' + escapeHtml(ev.notes || '—') + '</td>' +
       '</tr>';
@@ -733,6 +768,8 @@ if (reportButton) {
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Speaking</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Writing</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Video</th>' +
+              '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Test</th>' +
+
               '<th style="border: 1px solid #334155; padding: 12px 6px; width: 140px;">Performance Status</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 8px; text-align: left;">Teacher Evaluation Feedback Notes</th>' +
             '</tr>' +
