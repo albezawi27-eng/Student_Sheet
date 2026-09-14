@@ -696,7 +696,6 @@ if (reportButton) {
         '<td style="border: 1px solid #cbd5e1; text-align: center; padding: 10px; font-weight: 800; color: #059669; font-size: 13px; background: #f0fdf4;">' + (ev.dictationMark || 0) + ' / ' + appState.maxDictationScore + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #10b981;">' + (cr.attendance ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #10b981;">' + (cr.hw ? '✓' : '—') + '</td>' +
-        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.listening ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.reading ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.speaking ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.writing ? '✓' : '—') + '</td>' +
