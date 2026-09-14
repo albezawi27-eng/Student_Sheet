@@ -454,7 +454,7 @@
       if (!appState.evaluations[evalKey]) {
         appState.evaluations[evalKey] = {
           dictationMark: null,
-testScore: null,
+
 criteria: { attendance: true, hw: false, listening: false, reading: false, speaking: false, writing: false, video: false }, notes: '' };
       }
       const evalData = appState.evaluations[evalKey]; const tr = document.createElement('tr');
@@ -482,11 +482,6 @@ criteria: { attendance: true, hw: false, listening: false, reading: false, speak
 
   '<td>' +
   '<input type="number" min="0" step="0.5" class="dictation-input" ' +
-  'value="' + (typeof evalData.testScore === 'number' ? evalData.testScore : '') + '" ' +
-  'placeholder="—" ' +
-  'onchange="updateTestScore(\'' + student.id + '\', this.value)">' +
-  '</td>' +
-
   '<td>' + criteriaHTML + '</td>' +
   '<td><span class="badge-grade ' + gradeObj.cssClass + '">' + gradeObj.label + '</span></td>' +
   '<td><input type="text" class="notes-input" value="' + escapeHtml(evalData.notes || '') + '" onchange="updateStudentNotes(\'' + student.id + '\', this.value)"></td>' +
@@ -555,28 +550,6 @@ if (reportButton) {
     updateStatsSummary();
   }
 
-  function updateTestScore(studentId, val) {
-    const evalKey = appState.currentLessonId + '_' + studentId;
-    if (!appState.evaluations[evalKey]) return;
-  
-    if (val === '') {
-      appState.evaluations[evalKey].testScore = null;
-    } else {
-      let num = parseFloat(val);
-  
-      if (isNaN(num)) {
-        num = null;
-      }
-  
-      if (num !== null && num < 0) {
-        num = 0;
-      }
-  
-      appState.evaluations[evalKey].testScore = num;
-    }
-  
-    saveDataToStorage();
-  }
   function setNoDictation(studentId) {
     const evalKey = appState.currentLessonId + '_' + studentId;
     if (!appState.evaluations[evalKey]) return;
