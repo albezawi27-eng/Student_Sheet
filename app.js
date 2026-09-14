@@ -452,7 +452,8 @@
     filteredStudents.forEach((student, idx) => {
       const evalKey = appState.currentLessonId + '_' + student.id;
       if (!appState.evaluations[evalKey]) {
-        appState.evaluations[evalKey] = { dictationMark: 0, criteria: { attendance: true, hw: false, listening: false, reading: false, speaking: false, writing: false, video: false }, notes: '' };
+        appState.evaluations[evalKey] = {
+          dictationMark: null, criteria: { attendance: true, hw: false, listening: false, reading: false, speaking: false, writing: false, video: false }, notes: '' };
       }
       const evalData = appState.evaluations[evalKey]; const tr = document.createElement('tr');
       const initials = student.name.split(' ').map(n => n).join('').substring(0, 2).toUpperCase(); const gradeObj = calculateGrade(evalData.dictationMark);
@@ -465,8 +466,15 @@
   
       tr.innerHTML = '<td>' + (idx + 1) + '</td>' +
         '<td><div class="student-profile"><div class="avatar-circle">' + initials + '</div><span>' + escapeHtml(student.name) + '</span></div></td>' +
-        '<td><div class="dictation-input-wrap"><input type="number" step="0.5" class="dictation-input" value="' + (evalData.dictationMark !== undefined ? evalData.dictationMark : '') + '" onchange="updateDictationMark(\'' + student.id + '\', this.value)"><span class="max-score-tag">/' + appState.maxDictationScore + '</span></div></td>' +
-        '<td>' + criteriaHTML + '</td>' +
+'<td><div class="dictation-input-wrap">' +
+  '<input type="number" step="0.5" class="dictation-input" ' +
+  'value="' + (typeof evalData.dictationMark === 'number' ? evalData.dictationMark : '') + '" ' +
+  'placeholder="—" ' +
+  'onchange="updateDictationMark(\'' + student.id + '\', this.value)">' +
+  '<span class="max-score-tag">/' + appState.maxDictationScore + '</span>' +
+  '<button type="button" class="btn btn-secondary" style="margin-left:6px;font-size:11px;padding:4px 7px;" ' +
+  'onclick="setNoDictation(\'' + student.id + '\')">No dictation</button>' +
+'</div></td>' +        '<td>' + criteriaHTML + '</td>' +
         '<td><span class="badge-grade ' + gradeObj.cssClass + '">' + gradeObj.label + '</span></td>' +
         '<td><input type="text" class="notes-input" value="' + escapeHtml(evalData.notes || '') + '" onchange="updateStudentNotes(\'' + student.id + '\', this.value)"></td>' +
         '<td style="text-align: right;">' +
@@ -485,9 +493,20 @@ if (reportButton) {
   }
   
   function calculateGrade(mark) {
+    if (mark === 'No dictation' || mark === null || mark === undefined || mark === '') {
+      return { label: 'No dictation', cssClass: 'needs-work' };
+    }
+  
     const percentage = (mark / appState.maxDictationScore) * 100;
-    if (percentage >= 90) return { label: 'Excellent (A+)', cssClass: 'excellent' };
-    if (percentage >= 75) return { label: 'Good (B)', cssClass: 'good' };
+  
+    if (percentage >= 90) {
+      return { label: 'Excellent (A+)', cssClass: 'excellent' };
+    }
+  
+    if (percentage >= 75) {
+      return { label: 'Good (B)', cssClass: 'good' };
+    }
+  
     return { label: 'Needs Improvement', cssClass: 'needs-work' };
   }
   function toggleCriteria(studentId, criteriaKey) {
@@ -498,9 +517,40 @@ if (reportButton) {
   }
   
   function updateDictationMark(studentId, val) {
-    const evalKey = appState.currentLessonId + '_' + studentId; if (!appState.evaluations[evalKey]) return;
-    let num = parseFloat(val); if (isNaN(num)) num = 0; if (num < 0) num = 0; if (num > appState.maxDictationScore) num = appState.maxDictationScore;
-    appState.evaluations[evalKey].dictationMark = num; saveDataToStorage(); renderTable(); updateStatsSummary();
+    const evalKey = appState.currentLessonId + '_' + studentId;
+    if (!appState.evaluations[evalKey]) return;
+  
+    if (val === '' || val === null) {
+      appState.evaluations[evalKey].dictationMark = null;
+    } else {
+      let num = parseFloat(val);
+  
+      if (isNaN(num)) {
+        appState.evaluations[evalKey].dictationMark = null;
+      } else {
+        if (num < 0) num = 0;
+        if (num > appState.maxDictationScore) {
+          num = appState.maxDictationScore;
+        }
+  
+        appState.evaluations[evalKey].dictationMark = num;
+      }
+    }
+  
+    saveDataToStorage();
+    renderTable();
+    updateStatsSummary();
+  }
+
+  function setNoDictation(studentId) {
+    const evalKey = appState.currentLessonId + '_' + studentId;
+    if (!appState.evaluations[evalKey]) return;
+  
+    appState.evaluations[evalKey].dictationMark = 'No dictation';
+  
+    saveDataToStorage();
+    renderTable();
+    updateStatsSummary();
   }
   
   function updateStudentNotes(studentId, text) {
@@ -509,17 +559,66 @@ if (reportButton) {
   }
   
   function updateStatsSummary() {
-    const countEl = document.getElementById('statStudentCount'); if (!countEl) return;
-    const currentStudents = appState.students.filter(s => s.classId === appState.currentClassId); const count = currentStudents.length; countEl.textContent = count;
-    if (count === 0) { document.getElementById('statDictationAvg').textContent = '0 / ' + appState.maxDictationScore; document.getElementById('statSkillPassRate').textContent = '0%'; document.getElementById('statAttendanceRate').textContent = '0%'; return; }
-    let totalDict = 0; let totalSkills = 0; let totalPossible = count * CRITERIA_KEYS.length; let attended = 0;
+
+    const countEl = document.getElementById('statStudentCount');
+    if (!countEl) return;
+  
+    const currentStudents = appState.students.filter(
+      s => s.classId === appState.currentClassId
+    );
+  
+    const count = currentStudents.length;
+    countEl.textContent = count;
+  
+    if (count === 0) {
+      document.getElementById('statDictationAvg').textContent =
+        '0 / ' + appState.maxDictationScore;
+      document.getElementById('statSkillPassRate').textContent = '0%';
+      document.getElementById('statAttendanceRate').textContent = '0%';
+      return;
+    }
+  
+    let totalDictation = 0;
+    let dictationCount = 0;
+    let totalSkills = 0;
+    let totalPossible = count * CRITERIA_KEYS.length;
+    let attended = 0;
+  
     currentStudents.forEach(s => {
-      const ev = appState.evaluations[appState.currentLessonId + '_' + s.id];
-      if (ev) { totalDict += (ev.dictationMark || 0); if (ev.criteria) { if (ev.criteria.attendance) attended++; CRITERIA_KEYS.forEach(c => { if (ev.criteria[c.id]) totalSkills++; }); } }
+  
+      const ev = appState.evaluations[
+        appState.currentLessonId + '_' + s.id
+      ];
+  
+      if (ev) {
+  
+        if (typeof ev.dictationMark === 'number') {
+          totalDictation += ev.dictationMark;
+          dictationCount++;
+        }
+  
+        if (ev.criteria) {
+          if (ev.criteria.attendance) attended++;
+  
+          CRITERIA_KEYS.forEach(c => {
+            if (ev.criteria[c.id]) totalSkills++;
+          });
+        }
+      }
+  
     });
-    document.getElementById('statDictationAvg').textContent = (totalDict / count).toFixed(1) + ' / ' + appState.maxDictationScore;
-    document.getElementById('statSkillPassRate').textContent = Math.round((totalSkills / totalPossible) * 100) + '%';
-    document.getElementById('statAttendanceRate').textContent = Math.round((attended / count) * 100) + '%';
+  
+    document.getElementById('statDictationAvg').textContent =
+      dictationCount > 0
+        ? (totalDictation / dictationCount).toFixed(1) + ' / ' + appState.maxDictationScore
+        : '— / ' + appState.maxDictationScore;
+  
+    document.getElementById('statSkillPassRate').textContent =
+      Math.round((totalSkills / totalPossible) * 100) + '%';
+  
+    document.getElementById('statAttendanceRate').textContent =
+      Math.round((attended / count) * 100) + '%';
+  
   }
   
   function openReportModal(studentId) {
