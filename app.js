@@ -479,16 +479,6 @@ criteria: { attendance: true, hw: false, listening: false, reading: false, speak
 '" style="margin-left:6px;font-size:11px;padding:4px 7px;" ' +
 'onclick="setNoDictation(\'' + student.id + '\')">No dictation</button>' +
   '</div></td>' +
-
-  '<td>' +
-  '<input type="number" min="0" step="0.5" class="dictation-input" ' +
-  '<td>' + criteriaHTML + '</td>' +
-  '<td><span class="badge-grade ' + gradeObj.cssClass + '">' + gradeObj.label + '</span></td>' +
-  '<td><input type="text" class="notes-input" value="' + escapeHtml(evalData.notes || '') + '" onchange="updateStudentNotes(\'' + student.id + '\', this.value)"></td>' +
-  '<td style="text-align: right;">' +
-  '<button class="btn btn-secondary student-report-btn" data-student-id="' + student.id + '">Report</button>' +
-  '<button class="btn-icon" style="color: red;" onclick="deleteStudent(\'' + student.id + '\')"><i class="fa-solid fa-trash-can"></i></button>' +
-  '</td>';
       tbody.appendChild(tr);
       const reportButton = tr.querySelector('.student-report-btn');
 
