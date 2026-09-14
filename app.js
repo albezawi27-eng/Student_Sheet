@@ -737,7 +737,6 @@ if (reportButton) {
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.speaking ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.writing ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.video ? '✓' : '—') + '</td>' +
-        '<td style="border: 1px solid #cbd5e1; text-align: center; font-size: 15px; font-weight: bold; color: #2563eb;">' + (cr.Test ? '✓' : '—') + '</td>' +
         '<td style="border: 1px solid #cbd5e1; text-align: center; padding: 10px;"><span class="badge-grade ' + gradeObj.cssClass + '" style="font-size: 11px; font-weight: bold; text-transform: uppercase;">' + gradeObj.label + '</span></td>' +
         '<td style="border: 1px solid #cbd5e1; padding: 10px; font-size: 12px; color: #475569; font-style: italic; max-width: 200px; word-wrap: break-word;">' + escapeHtml(ev.notes || '—') + '</td>' +
       '</tr>';
