@@ -768,7 +768,6 @@ if (reportButton) {
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Writing</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 4px; width: 45px;">Video</th>' +
               '<th style="border: 1px solid #334155; padding: 12px 8px; text-align: left;">Teacher Evaluation Feedback Notes</th>' +
-              '<th style="border: 1px solid #334155; padding: 12px 8px; text-align: left;">Test Score</th>' +
             '</tr>' +
           '</thead>' +
           '<tbody>' + rows + '</tbody>' +
